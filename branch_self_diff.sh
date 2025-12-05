@@ -116,23 +116,34 @@ run_self_diff() {
   cleanup_tbl_empty="$tbl_empty"
   cleanup_tbl_copy_prev="$tbl_copy_prev"
   cleanup_sp_last="$sp_last"
-
-  cleanup_msgs=()
-  cleanup_sqls=()
-  cleanup_msgs+=("cleanup drop copy table")
-  cleanup_sqls+=("drop table if exists ${cleanup_db}.${cleanup_tbl_copy};")
-  cleanup_msgs+=("cleanup drop prev copy table")
-  cleanup_sqls+=("drop table if exists ${cleanup_db}.${cleanup_tbl_copy_prev};")
-  cleanup_msgs+=("cleanup drop empty table")
-  cleanup_sqls+=("drop table if exists ${cleanup_db}.${cleanup_tbl_empty};")
-  if [[ -n "${cleanup_sp_last:-}" ]]; then
-    cleanup_msgs+=("cleanup drop last snapshot")
-    cleanup_sqls+=("drop snapshot if exists ${cleanup_sp_last};")
-  fi
+  cleanup_sp_newest="$sp_newest"
 
   cleanup() {
+    local status="${1:-$?}"
     set +e
     set +u
+
+    local cleanup_msgs=()
+    local cleanup_sqls=()
+    cleanup_msgs+=("cleanup drop copy table")
+    cleanup_sqls+=("drop table if exists ${cleanup_db}.${cleanup_tbl_copy};")
+    cleanup_msgs+=("cleanup drop prev copy table")
+    cleanup_sqls+=("drop table if exists ${cleanup_db}.${cleanup_tbl_copy_prev};")
+    cleanup_msgs+=("cleanup drop empty table")
+    cleanup_sqls+=("drop table if exists ${cleanup_db}.${cleanup_tbl_empty};")
+
+    if [[ "$status" -ne 0 ]]; then
+      if [[ -n "${cleanup_sp_newest:-}" ]]; then
+        cleanup_msgs+=("cleanup drop newest snapshot")
+        cleanup_sqls+=("drop snapshot if exists ${cleanup_sp_newest};")
+      fi
+    else
+      if [[ -n "${cleanup_sp_last:-}" ]]; then
+        cleanup_msgs+=("cleanup drop last snapshot")
+        cleanup_sqls+=("drop snapshot if exists ${cleanup_sp_last};")
+      fi
+    fi
+
     for i in "${!cleanup_msgs[@]}"; do
       print_step "${cleanup_msgs[$i]}" "${cleanup_sqls[$i]}"
       step_start=$(now_ms)
@@ -141,8 +152,9 @@ run_self_diff() {
       printf "Step done: %s (耗时 %s s)\n\n" "${cleanup_msgs[$i]}" "$(format_ms $((step_end-step_start)))"
     done
     set -euo pipefail
+    return "$status"
   }
-  trap cleanup EXIT
+  trap 'cleanup $?' EXIT
 
   print_step "step2 drop old copy tables" "drop table if exists ${db}.${tbl_copy}; drop table if exists ${db}.${tbl_copy_prev};"
   step_start=$(now_ms)
@@ -151,16 +163,16 @@ run_self_diff() {
   step_end=$(now_ms)
   printf "Step done: step2 drop old copy tables (耗时 %s s)\n\n" "$(format_ms $((step_end-step_start)))"
 
-  print_step "step3 clone newest snapshot" "create table ${db}.${tbl_copy} clone ${db}.${tbl}{snapshot = \"${sp_newest}\"};"
+  print_step "step3 clone newest snapshot" "data branch create table ${db}.${tbl_copy} from ${db}.${tbl}{snapshot = \"${sp_newest}\"};"
   step_start=$(now_ms)
-  mysql_exec "create table ${db}.${tbl_copy} clone ${db}.${tbl}{snapshot = \"${sp_newest}\"};"
+  mysql_exec "data branch create table ${db}.${tbl_copy} from ${db}.${tbl}{snapshot = \"${sp_newest}\"};"
   step_end=$(now_ms)
   printf "Step done: step3 clone newest snapshot (耗时 %s s)\n\n" "$(format_ms $((step_end-step_start)))"
 
   if [[ -n "$sp_last" ]]; then
-    print_step "step4 clone previous snapshot" "create table ${db}.${tbl_copy_prev} clone ${db}.${tbl}{snapshot = \"${sp_last}\"};"
+    print_step "step4 clone previous snapshot" "data branch create table ${db}.${tbl_copy_prev} from ${db}.${tbl}{snapshot = \"${sp_last}\"};"
     step_start=$(now_ms)
-    mysql_exec "create table ${db}.${tbl_copy_prev} clone ${db}.${tbl}{snapshot = \"${sp_last}\"};"
+    mysql_exec "data branch create table ${db}.${tbl_copy_prev} from ${db}.${tbl}{snapshot = \"${sp_last}\"};"
     step_end=$(now_ms)
     printf "Step done: step4 clone previous snapshot (耗时 %s s)\n\n" "$(format_ms $((step_end-step_start)))"
 
@@ -186,7 +198,7 @@ run_self_diff() {
   fi
 
   trap - EXIT
-  cleanup
+  cleanup 0
 }
 
 run_apply() {
