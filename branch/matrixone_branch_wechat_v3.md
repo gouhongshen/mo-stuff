@@ -1,4 +1,4 @@
-# 从“复制一份数据”到“发一份补丁”：MatrixOne Data Branch 把数据变更变成可回放的工作流（Diff/Merge/Restore + 跨集群同步）
+# 数据里的“平行宇宙”：用分支管理实现数据的版本控制
 
 > **适用版本提示**：本文提及的 Data Branch 功能适用于 MatrixOne v3.0 及以上版本。
 >
