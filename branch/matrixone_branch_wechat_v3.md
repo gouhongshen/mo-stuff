@@ -225,6 +225,7 @@ Stage 是 MatrixOne 用于连接外部存储（如 S3、HDFS 或本地文件系�
 2.  **统一路径**：将复杂的 URL 路径封装成简单的对象名，像挂载磁盘一样使用对象存储。
 
 
+```sql
 create stage stage01 url =
   's3://bucket/prefix?region=cn-north-1&access_key_id=xxx&secret_access_key=yyy';
 
