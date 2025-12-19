@@ -127,9 +127,10 @@ data branch diff orders_riskfix{snapshot='sp_riskfix'}
 
 ```text
 diff orders_riskfix against orders_promo   flag     order_id   risk_flag   promo_tag   amount
+orders_promo                               UPDATE   10001      0           double11    89.91
 orders_riskfix                             UPDATE   10002      1           null        199.00
 orders_promo                               UPDATE   10002      0           double11    179.10
-orders_riskfix                             INSERT   10003      0           corrected   10.00
+orders_riskfix                             UPDATE   10003      0           repaired    10.00
 orders_promo                               INSERT   10004      0           double11    39.90
 ```
 
