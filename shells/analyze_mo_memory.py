@@ -163,17 +163,47 @@ def get_mo_allocator_stats(host, port, content=_MISSING):
     if content is _MISSING:
         content = get_url_content(f"http://{host}:{port}/metrics", silent=True)
     if not content: return None
-    stats = {}
+    offheap_stats = {}
+    legacy_stats = {}
+    malloc_gauge_stats = {}
+    has_offheap = False
+    has_legacy = False
+    has_malloc_gauge = False
     for line in content.split('\n'):
-        if line.startswith('mo_mem_offheap_inuse_bytes') or line.startswith('mo_off_heap_inuse_bytes') or \
-           line.startswith('mo_mem_malloc_'):
-            try:
+        if not line or line.startswith('#'):
+            continue
+        try:
+            if line.startswith('mo_mem_offheap_inuse_bytes'):
+                has_offheap = True
                 name_match = re.search(r'type=\"([^\"]+)\"', line)
                 if name_match:
-                    name = name_match.group(1).replace('-inuse', '')
-                    stats[name] = stats.get(name, 0) + int(float(line.split()[-1]))
-            except: pass
-    return stats
+                    name = name_match.group(1)
+                    offheap_stats[name] = offheap_stats.get(name, 0) + int(float(line.split()[-1]))
+                continue
+            if line.startswith('mo_off_heap_inuse_bytes'):
+                has_legacy = True
+                name_match = re.search(r'type=\"([^\"]+)\"', line)
+                if name_match:
+                    name = name_match.group(1)
+                    legacy_stats[name] = legacy_stats.get(name, 0) + int(float(line.split()[-1]))
+                continue
+            if line.startswith('mo_mem_malloc_gauge'):
+                has_malloc_gauge = True
+                name_match = re.search(r'type=\"([^\"]+)\"', line)
+                if name_match:
+                    name = name_match.group(1)
+                    if 'objects' in name or 'inuse' not in name:
+                        continue
+                    name = name.replace('-inuse', '')
+                    malloc_gauge_stats[name] = malloc_gauge_stats.get(name, 0) + int(float(line.split()[-1]))
+        except: pass
+    if has_offheap and offheap_stats:
+        return offheap_stats
+    if has_legacy and legacy_stats:
+        return legacy_stats
+    if has_malloc_gauge and malloc_gauge_stats:
+        return malloc_gauge_stats
+    return None
 
 def format_bytes(bytes_val):
     for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
@@ -254,13 +284,18 @@ def print_report(pid, sys_stats, go_stats, mpool_stats, alloc_stats, goroutine_c
         expected = (hs - hl) + off_heap if sys_stats['platform'] == 'Linux' else hs + off_heap
         diff = rss - expected
         
-        if diff > 2 * 1024*1024*1024:
-            print(f"  {Style.YELLOW}⚠️  发现无法解释的内存占用: {format_bytes(diff)}{Style.END}")
-            print(f"     公式: RSS - ((HeapSys - HeapReleased) + OffHeap)")
-            if alloc_stats is None:
-                print(f"     {Style.CYAN}❓ 建议: Metrics 接口未响应，这部分可能正是 Memory Cache。{Style.END}")
+        if abs(diff) > 2 * 1024*1024*1024:
+            if diff > 0:
+                print(f"  {Style.YELLOW}⚠️  发现无法解释的内存占用: {format_bytes(diff)}{Style.END}")
+                print(f"     公式: RSS - ((HeapSys - HeapReleased) + OffHeap)")
+                if alloc_stats is None:
+                    print(f"     {Style.CYAN}❓ 建议: Metrics 接口未响应，这部分可能正是 Memory Cache。{Style.END}")
+                else:
+                    print(f"     {Style.CYAN}💡 可能原因: CGO 隐藏分配、操作系统 Page Cache 或 Go 内存释放延迟。{Style.END}")
             else:
-                print(f"     {Style.CYAN}💡 可能原因: CGO 隐藏分配、操作系统 Page Cache 或 Go 内存释放延迟。{Style.END}")
+                print(f"  {Style.YELLOW}⚠️  统计值明显高于 RSS: {format_bytes(-diff)}{Style.END}")
+                print(f"     公式: RSS - ((HeapSys - HeapReleased) + OffHeap)")
+                print(f"     {Style.CYAN}💡 可能原因: Metrics 为累计值/统计重复(多进程共用端口)/Pprof 与 PID 不匹配。{Style.END}")
         else:
             print(f"  {Style.GREEN}✓ 内存账目吻合，未发现明显泄漏。{Style.END}")
     
@@ -275,6 +310,8 @@ def main():
         sys.exit(1)
     
     print(f"{Style.BLUE}Target: {args.host}:{args.port} (Pprof), {args.metrics_port} (Metrics){Style.END}")
+    if len(pids) > 1:
+        print(f"{Style.YELLOW}Warning: Multiple mo-service PIDs detected; Pprof/Metrics reflect a single endpoint and may not match each PID.{Style.END}")
     
     for pid in pids:
         sys_stats = get_sys_memory_info(pid)
