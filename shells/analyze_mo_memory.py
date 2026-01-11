@@ -49,6 +49,8 @@ def parse_args():
     parser.add_argument("--samples", type=int, default=6, help="Number of samples in watch mode, 0 = infinite (default: 6)")
     parser.add_argument("--oom-threshold", type=float, default=85.0, help="Warn when RSS exceeds this percent of memory limit (default: 85)")
     parser.add_argument("--growth-threshold-mb", type=float, default=512.0, help="Warn if RSS/Heap/OffHeap grows by this many MB in watch window (default: 512)")
+    parser.add_argument("--smaps-top", type=int, default=5, help="Show top N RSS mappings from /proc/<pid>/smaps (default: 5)")
+    parser.add_argument("--force", action="store_true", help="Continue even if PID does not match listening ports")
     return parser.parse_args()
 
 def get_pids(specific_pid=None):
@@ -180,6 +182,8 @@ def get_sys_memory_info(pid):
         try:
             smap_stats = {'go_main_heap': 0, 'go_arena': 0, 'heap': 0, 'stack': 0, 'total_rss': 0}
             current_type = None
+            current_map = '[anon]'
+            map_rss = defaultdict(int)
             with open(f'/proc/{pid}/smaps', 'r') as f:
                 for line in f:
                     line = line.strip()
@@ -189,8 +193,13 @@ def get_sys_memory_info(pid):
                         parts = line.split()
                         if len(parts) < 5:
                             current_type = None
+                            current_map = '[anon]'
                             continue
                         addr, perms, device, inode = parts[0], parts[1], parts[3], parts[4]
+                        if len(parts) >= 6:
+                            current_map = ' '.join(parts[5:])
+                        else:
+                            current_map = '[anon]'
                         if addr.startswith('c') and 'rw-p' in perms: current_type = 'go_main_heap'
                         elif addr.startswith('7f') and 'rw-p' in perms and device == '00:00' and inode == '0':
                             current_type = 'go_arena' if len(parts) <= 6 else None
@@ -204,8 +213,10 @@ def get_sys_memory_info(pid):
                             rss_kb = int(match.group(1))
                             smap_stats['total_rss'] += rss_kb
                             if current_type: smap_stats[current_type] += rss_kb
+                            map_rss[current_map] += rss_kb
             stats['total_rss'] = smap_stats['total_rss'] * 1024
             stats['details'] = smap_stats
+            stats['maps'] = {k: v * 1024 for k, v in map_rss.items()}
         except: pass
         try:
             status_stats = get_proc_status_stats(pid)
@@ -421,7 +432,7 @@ def run_watch(pids, args):
     for pid, values in history.items():
         analyze_growth(pid, values, threshold_bytes)
 
-def print_report(pid, sys_stats, go_stats, mpool_stats, alloc_stats, goroutine_count, oom_threshold):
+def print_report(pid, sys_stats, go_stats, mpool_stats, alloc_stats, goroutine_count, oom_threshold, smaps_top):
     # --- Header ---
     print(f"{Style.BOLD}{Style.HEADER}┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓{Style.END}")
     print(f"{Style.BOLD}{Style.HEADER}┃ MatrixOne Memory Analysis | PID: {pid:<8} | OS: {sys_stats['platform']:<10} ┃{Style.END}")
@@ -447,6 +458,12 @@ def print_report(pid, sys_stats, go_stats, mpool_stats, alloc_stats, goroutine_c
             print(f"  ├─ RSS 共享页 (Shmem): {format_bytes(status['RssShmem']):>12}")
         if status.get('VmSwap'):
             print(f"  └─ Swap 使用:          {format_bytes(status['VmSwap']):>12}")
+    maps = sys_stats.get('maps') or {}
+    if maps and smaps_top and smaps_top > 0:
+        print(f"  ├─ Top RSS 映射:")
+        for name, size in sorted(maps.items(), key=lambda x: x[1], reverse=True)[:smaps_top]:
+            label = name if name else '[anon]'
+            print(f"  │  {label:<24} {format_bytes(size):>12}")
     cgroup = sys_stats.get('cgroup') or {}
     if cgroup.get('limit'):
         limit = cgroup['limit']
@@ -568,6 +585,18 @@ def main():
             print(f"{Style.YELLOW}Warning: Multiple mo-service PIDs detected; using PID {resolved_pid} mapped to port {args.port}.{Style.END}")
         else:
             print(f"{Style.YELLOW}Warning: Multiple mo-service PIDs detected; Pprof/Metrics reflect a single endpoint and may not match each PID. Use --pid to choose.{Style.END}")
+    if args.pid and platform.system() == 'Linux':
+        port_pid = find_pid_by_listen_port(args.port)
+        if port_pid and port_pid != args.pid:
+            print(f"{Style.RED}Error: PID {args.pid} does not own pprof port {args.port} (found PID {port_pid}).{Style.END}")
+            if not args.force:
+                sys.exit(2)
+        if args.metrics_port != args.port:
+            metrics_pid = find_pid_by_listen_port(args.metrics_port)
+            if metrics_pid and metrics_pid != args.pid:
+                print(f"{Style.RED}Error: PID {args.pid} does not own metrics port {args.metrics_port} (found PID {metrics_pid}).{Style.END}")
+                if not args.force:
+                    sys.exit(2)
 
     if args.watch:
         run_watch(selected_pids, args)
@@ -583,6 +612,7 @@ def main():
             snapshot['alloc_stats'],
             snapshot['goroutine_count'],
             args.oom_threshold,
+            args.smaps_top,
         )
         if args.dump:
             dump_heap_profile(args.host, args.port)
