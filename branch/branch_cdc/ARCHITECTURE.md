@@ -1,48 +1,37 @@
-# MatrixOne Data Branch CDC 技术架构与验证报告 (v3.1)
+# MatrixOne Data Branch CDC 技术架构与验证报告 (v4.0)
 
-> **Note**: 本版本针对第三方 Review 意见进行了深度加固，解决了锁竞争、数据重入及校验深度等核心问题。
+> **Note**: 本版本采用 **扁平化执行引擎**，彻底解决了分布式环境下快照丢失导致的递归异常，并针对 MatrixOne 快照全局属性加强了考古匹配精度。
 
 ## 1. 方案概述 (Overview)
-`branch_cdc.py` 是一个基于 MatrixOne **Data Branch** 特性实现的增量同步工具。它通过快照（Snapshot）和分支比对（Diff）技术，实现了从上游（Upstream）到下游（Downstream）的逻辑数据复制。
+`branch_cdc.py` 是一个基于 MatrixOne **Data Branch** 特性实现的工业级增量同步工具。
 
 ---
 
 ## 2. 核心状态转移模型 (Core State Transitions)
 
-同步进程严格遵循以下流水线状态机，确保在分布式环境下的原子性与自愈能力：
+### 2.1 基础设施初始化 (Infrastructure First)
+*   **连接解耦**: 采用“ foundation session” 模式，即使目标数据库物理上不存在，脚本依然能成功建立基础连接并自动执行 `CREATE DATABASE`。
+*   **分布式锁 (LockKeeper Thread)**: 引入独立的守护线程，每 10s 自动续约锁有效期，彻底解决长同步任务（如大表 Diff 或大规模 DML 应用）中的锁抢占风险。
 
-### 2.1 初始化与锁机制 (Init & Locking)
-*   **分布式锁 (Multi-instance Safety)**: 执行 `acquire_lock()`。
-    *   **抢占逻辑**: `(lock_owner IS NULL) OR (owner=self) OR (lock_time < NOW() - 30s)`。
-    *   **锁续约 (Heartbeat)**: 在耗时的 `diff` 捕获后及数据应用前，调用 `heartbeat_lock()` 刷新锁时间，防止长同步被误抢占。
-*   **DB 自动创建**: 自动检查并创建下游数据库及 `meta` 管理库。
+### 2.2 考古恢复与防重 (Archeology & Deduplication)
+*   **多维考古匹配**: `archeology_recovery` 不仅比对数据哈希，还强制验证快照的 `database_name` 和 `table_name` 属性，杜绝了多任务环境下的假阳性匹配。
+*   **回退安全性**: 
+    *   在 `FULL Sync` 路径中，强制遵循“先 Diff、后 Truncate”的原子顺序，确保同步前置失败时下游数据零损失。
+    *   在 `INCREMENTAL` 路径中，若检测到上游快照失效，系统会自动触发 `Watermark Reset` 并回退至全量同步模式。
 
-### 2.2 考古恢复模式 (Archeology Recovery)
-*   **触发条件**: 当 `meta` 记录丢失且下游已有数据时自动启动。
-*   **恢复路径**:
-    1.  扫描上游所有属于该 `task_id` 的历史快照。
-    2.  利用 **1% 抽样哈希校验** 进行反向探测。
-    3.  一旦匹配，立即恢复 `meta` 水位线，避免重复执行 `FULL` 同步。
-*   **防重底座**: 如果考古模式无法找回水位，必须执行 `FULL` 同步时，会先执行 `TRUNCATE TABLE` 强制清理下游，确保数据零重复。
-
-### 2.3 差异捕获与事务应用 (Atomic Apply)
-*   **差异生成**: 利用 `data branch diff ... output file` 生成变更集。
-*   **事务控制**: 
-    *   **严格事务模型**: 显式关闭驱动层 `autocommit`，确保 Session 始终受 Python 事务控制。在任何 DDL (如 TRUNCATE) 后强制执行 `COMMIT` 以清空隐式事务上下文。
-    *   **事务剥离**: 使用更健壮的正则表达式从 SQL 文件中滤除 `BEGIN/COMMIT/ROLLBACK/START TRANSACTION`。
-    *   **SQL 重写**: 动态解析 `INSERT/UPDATE/REPLACE/DELETE` 语句，确保 schema 与下游目标一致。
-*   **原子提交**: 数据变更 DML 与 `meta` 水位线更新在同一个物理事务中 `COMMIT`。
+### 2.3 扁平化执行引擎 (Linear Execution)
+*   **无递归设计**: 所有的重试与模式切换均通过显式的逻辑跳转实现，消除了 Python 栈溢出的隐患。
+*   **SQL 重写审计**: 增强版正则重写器支持 SQL Hint、多表 JOIN 变体及 `INSERT/UPDATE` 的重定向。
 
 ---
 
 ## 3. 分级验证模型 (Tiered Verification)
 
-系统内置了两种维度的校验，在 `sync_loop` 中自动切换：
-
 | 校验级别 | 触发频率 | 技术细节 | 目的 |
 | :--- | :--- | :--- | :--- |
-| **FAST Check** | 每 5 次同步 | **1% 抽样哈希**: 基于主键执行 `ABS(HASHTYPE(pk)) % 100 = 7` | 探测行内数据篡改 |
+| **FAST Check** | 每 5 次同步 | **1% 抽样哈希**: 利用 `__mo_fake_pk_col` 或 PRI 采样 | 探测行内数据篡改 |
 | **FULL Check** | 每 N 次同步 | 全表审计: `BIT_XOR(CRC32(CONCAT_WS(...)))` | 终极一致性保证 |
+
 
 ---
 

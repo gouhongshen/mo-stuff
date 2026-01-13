@@ -2113,3 +2113,251 @@ Sync FAILED: (20300, 'invalid configuration: Stage stage_missing not found')
 [yellow]Retrying with FULL sync now...[/yellow]
 [blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_cdc_rev_up_snap_t_snap_to_cdc_rev_ds_snap_t_snap | From cdc_cc1f875747cf_260113190538223[/blue]
 [yellow]Retrying with FULL sync now...[/yellow]
+[dim]Archeology Mode: Searching for historical snapshots...[/dim]
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_802d781be814_260113190537940. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(1,3087059010) vs Ds(0,None)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_802d781be814_260113190521482. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(1,3087059010) vs Ds(0,None)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_802d781be814_260113190438601. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(1,3087059010) vs Ds(0,None)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_802d781be814_260113190424592. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(1,3087059010) vs Ds(0,None)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_802d781be814_260113190358410. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(1,3087059010) vs Ds(0,None)
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_auto_db_t_auto_to_cdc_rev_ds_missing_t_auto[/blue]
+[dim]Archeology Mode: Searching for historical snapshots...[/dim]
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_7cfb668e3df8_260113190538127. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_7cfb668e3df8_260113190521616. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_7cfb668e3df8_260113190438732. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_7cfb668e3df8_260113190424723. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_7cfb668e3df8_260113190358527. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_7cfb668e3df8_260113190308609. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_trunc_t_trunc_to_cdc_rev_ds_trunc_t_trunc[/blue]
+Sync FAILED: (20300, 'invalid configuration: Stage stage_missing not found')
+[dim]Archeology Mode: Searching for historical snapshots...[/dim]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_snap_t_snap_to_cdc_rev_ds_snap_t_snap[/blue]
+[dim]Archeology Mode: Searching for historical snapshots...[/dim]
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_0c9fd0ed7259_260113190521873. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(2,966327341) vs Ds(0,None)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_0c9fd0ed7259_260113190438968. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(2,966327341) vs Ds(0,None)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_0c9fd0ed7259_260113190425045. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(2,966327341) vs Ds(0,None)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_0c9fd0ed7259_260113190358678. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(2,966327341) vs Ds(0,None)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+[cyan]Fast match found: cdc_0c9fd0ed7259_260113190308840. Verifying with FULL check...[/cyan]
+Verify FAILED | Up(2,966327341) vs Ds(0,None)
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_nopk_t_nopk_to_cdc_rev_ds_nopk_t_nopk[/blue]
+Sync FAILED: name 'generate_snapshot_name' is not defined
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+Sync FAILED: name 'generate_snapshot_name' is not defined
+Sync FAILED: name 'generate_snapshot_name' is not defined
+Sync FAILED: name 'generate_snapshot_name' is not defined
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_auto_db_t_auto_to_cdc_rev_ds_missing_t_auto[/blue]
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_trunc_t_trunc_to_cdc_rev_ds_trunc_t_trunc[/blue]
+Sync FAILED: (20300, 'invalid configuration: Stage stage_missing not found')
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_snap_t_snap_to_cdc_rev_ds_snap_t_snap[/blue]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_nopk_t_nopk_to_cdc_rev_ds_nopk_t_nopk[/blue]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_auto_db_t_auto_to_cdc_rev_ds_missing_t_auto[/blue]
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_trunc_t_trunc_to_cdc_rev_ds_trunc_t_trunc[/blue]
+Sync FAILED: (20300, 'invalid configuration: Stage stage_missing not found')
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_snap_t_snap_to_cdc_rev_ds_snap_t_snap[/blue]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_nopk_t_nopk_to_cdc_rev_ds_nopk_t_nopk[/blue]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_auto_db_t_auto_to_cdc_rev_ds_missing_t_auto[/blue]
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_trunc_t_trunc_to_cdc_rev_ds_trunc_t_trunc[/blue]
+Sync FAILED: (20300, 'invalid configuration: Stage stage_missing not found')
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_snap_t_snap_to_cdc_rev_ds_snap_t_snap[/blue]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_nopk_t_nopk_to_cdc_rev_ds_nopk_t_nopk[/blue]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_auto_db_t_auto_to_cdc_rev_ds_missing_t_auto[/blue]
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_trunc_t_trunc_to_cdc_rev_ds_trunc_t_trunc[/blue]
+Sync FAILED: (20300, 'invalid configuration: Stage stage_missing not found')
+Traceback (most recent call last):
+  File "/Users/ghs-mo/MOWorkSpace/mo-stuff/branch/branch_cdc/branch_cdc.py", line 189, in perform_sync
+    try: dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{newsnap}'}} against `{u_cfg['db']}`.`{t_zero}` output file 'stage://{config['stage']['name']}'")
+  File "/Users/ghs-mo/MOWorkSpace/mo-stuff/branch/branch_cdc/branch_cdc.py", line 55, in query
+    with self.conn.cursor() as cursor: cursor.execute(sql, args); return cursor.fetchall()
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/cursors.py", line 153, in execute
+    result = self._query(query)
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/cursors.py", line 322, in _query
+    conn.query(q)
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/connections.py", line 575, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/connections.py", line 826, in _read_query_result
+    result.read()
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/connections.py", line 1203, in read
+    first_packet = self.connection._read_packet()
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/connections.py", line 782, in _read_packet
+    packet.raise_for_error()
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.OperationalError: (20300, 'invalid configuration: Stage stage_missing not found')
+
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_snap_t_snap_to_cdc_rev_ds_snap_t_snap[/blue]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_nopk_t_nopk_to_cdc_rev_ds_nopk_t_nopk[/blue]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_auto_db_t_auto_to_cdc_rev_ds_missing_t_auto[/blue]
+[green]Sync SUCCESS | cdc_802d781be814_260113191236713[/green]
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[green]FAST Check PASSED | Rows: 0 | Hash: None[/green]
+Verify FAILED | Up(0,None) vs Ds(2,1172751497)
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_trunc_t_trunc_to_cdc_rev_ds_trunc_t_trunc[/blue]
+Sync FAILED: (20300, 'invalid configuration: Stage stage_missing not found')
+Traceback (most recent call last):
+  File "/Users/ghs-mo/MOWorkSpace/mo-stuff/branch/branch_cdc/branch_cdc.py", line 194, in perform_sync
+    try: dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{newsnap}'}} against `{u_cfg['db']}`.`{t_zero}` output file 'stage://{config['stage']['name']}'")
+  File "/Users/ghs-mo/MOWorkSpace/mo-stuff/branch/branch_cdc/branch_cdc.py", line 55, in query
+    with self.conn.cursor() as cursor: cursor.execute(sql, args); return cursor.fetchall()
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/cursors.py", line 153, in execute
+    result = self._query(query)
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/cursors.py", line 322, in _query
+    conn.query(q)
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/connections.py", line 575, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/connections.py", line 826, in _read_query_result
+    result.read()
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/connections.py", line 1203, in read
+    first_packet = self.connection._read_packet()
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/connections.py", line 782, in _read_packet
+    packet.raise_for_error()
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "/Users/ghs-mo/Library/Python/3.9/lib/python/site-packages/pymysql/err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.OperationalError: (20300, 'invalid configuration: Stage stage_missing not found')
+
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_snap_t_snap_to_cdc_rev_ds_snap_t_snap[/blue]
+[green]Sync SUCCESS | cdc_cc1f875747cf_260113191237016[/green]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_nopk_t_nopk_to_cdc_rev_ds_nopk_t_nopk[/blue]
+[green]Sync SUCCESS | cdc_0c9fd0ed7259_260113191237105[/green]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_auto_db_t_auto_to_cdc_rev_ds_missing_t_auto[/blue]
+[green]Sync SUCCESS | cdc_802d781be814_260113191325102[/green]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_trunc_t_trunc_to_cdc_rev_ds_trunc_t_trunc[/blue]
+Sync FAILED: (20300, 'invalid configuration: Stage stage_missing not found')
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_snap_t_snap_to_cdc_rev_ds_snap_t_snap[/blue]
+[green]Sync SUCCESS | cdc_cc1f875747cf_260113191325416[/green]
+Snapshot cdc_cc1f875747cf_260113191325416 lost. Resetting to FULL sync.
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_snap_t_snap_to_cdc_rev_ds_snap_t_snap[/blue]
+[green]Sync SUCCESS | cdc_cc1f875747cf_260113191325489[/green]
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_up_nopk_t_nopk_to_cdc_rev_ds_nopk_t_nopk[/blue]
+[green]Sync SUCCESS | cdc_0c9fd0ed7259_260113191325580[/green]
