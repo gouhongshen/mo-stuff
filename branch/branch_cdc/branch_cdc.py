@@ -7,6 +7,7 @@ import questionary
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+from rich.box import ROUNDED
 from rich.logging import RichHandler
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.live import Live
@@ -274,7 +275,21 @@ def log_verify_result(ok, ur, dr, sample=False, snapshot_label=None):
     d_hash = format_check_value(dr['h']) if dr else "N/A"
     log.error(f"[red]{mode} VERIFY FAILED[/red] upstream rows={u_cnt} hash={u_hash} downstream rows={d_cnt} hash={d_hash}{snap_info}")
 
-def run_with_activity_indicator(title, action_fn):
+def build_status_panel(config, last_sync=None, last_verify=None, last_error=None):
+    up = config.get("upstream", {})
+    ds = config.get("downstream", {})
+    tbl = Table.grid(padding=(0, 1))
+    tbl.add_row("Up", f"{up.get('db')}.{up.get('table')}")
+    tbl.add_row("Ds", f"{ds.get('db')}.{ds.get('table')}")
+    if last_sync:
+        tbl.add_row("Last Sync", last_sync)
+    if last_verify:
+        tbl.add_row("Last Verify", last_verify)
+    if last_error:
+        tbl.add_row("Last Error", last_error)
+    return Panel(tbl, title="MatrixOne CDC", box=ROUNDED, border_style="cyan")
+
+def run_with_activity_indicator(title, action_fn, config=None, last_sync=None, last_verify=None, last_error=None):
     result = {"value": None, "error": None}
     done = threading.Event()
 
@@ -308,7 +323,14 @@ def run_with_activity_indicator(title, action_fn):
             tbl.add_row("Action", title)
             tbl.add_row("Status", "RUNNING")
             tbl.add_row("Pulse", frame)
-            live.update(Panel(tbl, title="Working"))
+            if config:
+                panel = Panel(tbl, title="Working", box=ROUNDED, border_style="yellow")
+                layout = Table.grid(padding=(1, 2))
+                layout.add_row(build_status_panel(config, last_sync, last_verify, last_error))
+                layout.add_row(panel)
+                live.update(layout)
+            else:
+                live.update(Panel(tbl, title="Working", box=ROUNDED, border_style="yellow"))
             time.sleep(0.12)
             idx += 1
 
@@ -472,6 +494,9 @@ def sync_loop(config, interval):
     tid = get_task_id(config)
     ds_conn = None
     keeper = None
+    last_sync = None
+    last_verify = None
+    last_error = None
     try:
         while True:
             v_int = config.get("verify_interval", 50)
@@ -489,6 +514,7 @@ def sync_loop(config, interval):
                     keeper.start()
                 if perform_sync(config, is_auto=True, lock_held=True):
                     sc += 1
+                    last_sync = time.strftime("%Y-%m-%d %H:%M:%S")
                     if sc % 5 == 0 or (v_int > 0 and sc % v_int == 0):
                         up, ds = DBConnection(config["upstream"], "Up", autocommit=True), DBConnection(config["downstream"], "Ds", autocommit=True)
                         if up.connect() and ds.connect():
@@ -502,9 +528,11 @@ def sync_loop(config, interval):
                                 log.info(f"Verify duration={verify_elapsed:.3f}s mode={'FAST' if sample else 'FULL'} snapshot={ws[0]}")
                                 if not ok:
                                     log.warning("Consistency check FAILED; please investigate.")
+                                last_verify = f"{time.strftime('%Y-%m-%d %H:%M:%S')} ({'FAST' if sample else 'FULL'})"
                             up.close(); ds.close()
                 time.sleep(interval)
             except Exception as e:
+                last_error = str(e)
                 log.warning(f"Auto loop error: {e}. Reconnecting...")
                 if keeper and keeper.is_alive():
                     keeper.stop(); keeper.join()
@@ -521,12 +549,16 @@ def sync_loop(config, interval):
             ds_conn.close()
 
 def main():
-    console.print(Panel.fit("MatrixOne branch_cdc v4.1", style="bold magenta"))
+    console.print(Panel.fit("MatrixOne branch_cdc v4.1", style="bold magenta", box=ROUNDED))
     config = load_config()
     if not config: config = setup_config()
+    last_sync = None
+    last_verify = None
+    last_error = None
     if cli_args.once: perform_sync(config); sys.exit(0)
     if cli_args.mode == "auto": sync_loop(config, cli_args.interval or config.get("sync_interval", 60)); sys.exit(0)
     while True:
+        console.print(build_status_panel(config, last_sync, last_verify, last_error))
         c = questionary.select("Mode:", choices=["Manual Sync Now", "Verify Consistency", "Automatic Mode", "Edit Configuration", "Exit"]).ask()
         if c == "Exit": sys.exit(0)
         elif c == "Edit Configuration": config = setup_config(config)
@@ -557,12 +589,18 @@ def main():
                 up.close(); ds.close()
                 return ok, ur, dr
             verify_start = time.time()
-            ok, ur, dr = run_with_activity_indicator("Verify Consistency", do_verify)
+            ok, ur, dr = run_with_activity_indicator("Verify Consistency", do_verify, config, last_sync, last_verify, last_error)
             log_verify_result(ok, ur, dr, sample=False, snapshot_label=snap_label)
             verify_elapsed = time.time() - verify_start
             log.info(f"Verify duration={verify_elapsed:.3f}s mode=FULL snapshot={snap_label}")
+            last_verify = f"{time.strftime('%Y-%m-%d %H:%M:%S')} (FULL)"
+            if not ok:
+                last_error = "Verify failed"
         elif c == "Manual Sync Now":
-            run_with_activity_indicator("Manual Sync", lambda: perform_sync(config))
+            ok = run_with_activity_indicator("Manual Sync", lambda: perform_sync(config), config, last_sync, last_verify, last_error)
+            last_sync = time.strftime("%Y-%m-%d %H:%M:%S")
+            if not ok:
+                last_error = "Sync failed"
         elif c == "Automatic Mode":
             val = questionary.text("Interval (sec):", default=str(config.get("sync_interval", 60))).ask()
             if val is None:
