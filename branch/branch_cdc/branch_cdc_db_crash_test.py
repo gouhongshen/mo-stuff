@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os, sys, time, subprocess, signal, random, pymysql, threading
 from rich.console import Console
+from branch_cdc import save_config
 
 # Review Fix: Removed hardcoded MO_ROOT, use relative path to matrixone repo
 # Assuming this script is in branch/branch_cdc/
@@ -10,6 +11,7 @@ LAUNCH_CMD = ["./mo-service", "-debug-http=:11235", "-launch", "etc/launch/launc
 
 console = Console()
 TEST_UP_DB, TEST_DS_DB, TEST_TABLE = "cdc_crash_up", "cdc_crash_ds", "crash_tbl"
+TEST_STAGE = "cdc_crash_stage"
 
 def restart_mo():
     console.print("[bold red]>>> KILLING mo-service...[/bold red]")
@@ -52,7 +54,18 @@ def main():
             cur.execute(f"CREATE DATABASE {db}")
         cur.execute(f"CREATE TABLE {TEST_UP_DB}.{TEST_TABLE} (id INT PRIMARY KEY, val INT)")
         for i in range(1000): cur.execute(f"INSERT INTO {TEST_UP_DB}.{TEST_TABLE} VALUES ({i}, 0)")
+        cur.execute(f"DROP STAGE IF EXISTS {TEST_STAGE}")
+        stage_path = os.path.abspath(os.path.join(os.getcwd(), "..", "stage"))
+        os.makedirs(stage_path, exist_ok=True)
+        cur.execute(f"CREATE STAGE {TEST_STAGE} URL='file://{stage_path}'")
     conn.close()
+    config = {
+        "upstream": {"host": "127.0.0.1", "port": 6001, "user": "dump", "password": "111", "db": TEST_UP_DB, "table": TEST_TABLE},
+        "downstream": {"host": "127.0.0.1", "port": 6001, "user": "dump", "password": "111", "db": TEST_DS_DB, "table": TEST_TABLE},
+        "stage": {"name": TEST_STAGE},
+        "sync_interval": 5,
+    }
+    save_config(config)
 
     # 2. Start CDC and Workload
     console.print("Starting branch_cdc.py in background...")
@@ -82,9 +95,9 @@ def main():
         # We check consistency manually here
         conn = pymysql.connect(host='127.0.0.1', port=6001, user='root', password='111', autocommit=True)
         with conn.cursor() as cur:
-            cur.execute(f"SELECT BIT_XOR(CRC32(val)) FROM {TEST_UP_DB}.{TEST_TABLE}")
+            cur.execute(f"SELECT BIT_XOR(CRC32(CAST(val AS VARCHAR))) FROM {TEST_UP_DB}.{TEST_TABLE}")
             h1 = cur.fetchone()[0]
-            cur.execute(f"SELECT BIT_XOR(CRC32(val)) FROM {TEST_DS_DB}.{TEST_TABLE}")
+            cur.execute(f"SELECT BIT_XOR(CRC32(CAST(val AS VARCHAR))) FROM {TEST_DS_DB}.{TEST_TABLE}")
             h2 = cur.fetchone()[0]
             if h1 == h2: console.print(Panel.fit("ULTIMATE DATABASE CRASH TEST PASSED! [UNSTOPPABLE HERO]", style="bold green"))
             else: console.print(Panel.fit("CRASH TEST FAILED: Hash Mismatch!", style="bold red"))

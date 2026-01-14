@@ -4,18 +4,19 @@
         "port": 6001,
         "user": "dump",
         "password": "111",
-        "db": "cdc_torture_up",
-        "table": "torture_tbl"
+        "db": "cdc_crash_up",
+        "table": "crash_tbl"
     },
     "downstream": {
         "host": "127.0.0.1",
         "port": 6001,
         "user": "dump",
         "password": "111",
-        "db": "cdc_torture_ds1",
-        "table": "torture_tbl"
+        "db": "cdc_crash_ds",
+        "table": "crash_tbl"
     },
     "stage": {
-        "name": "s1"
-    }
+        "name": "cdc_crash_stage"
+    },
+    "sync_interval": 5
 }

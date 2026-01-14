@@ -132,12 +132,18 @@ def generate_snapshot_name(tid):
 
 def archeology_recovery(up_conn, ds_conn, config, tid):
     sid_prefix = hashlib.md5(tid.encode()).hexdigest()[:12]
-    try: snaps = up_conn.query(f"SELECT sname FROM mo_catalog.mo_snapshots WHERE sname LIKE 'cdc_{sid_prefix}_%' AND database_name=%s AND table_name=%s ORDER BY ts DESC LIMIT 10", (config['upstream']['db'], config['upstream']['table']))
+    try:
+        pattern = f"cdc_{sid_prefix}_%"
+        snaps = up_conn.query(
+            "SELECT sname FROM mo_catalog.mo_snapshots WHERE sname LIKE %s AND database_name=%s AND table_name=%s ORDER BY ts DESC LIMIT 10",
+            (pattern, config['upstream']['db'], config['upstream']['table']),
+        )
     except: return None
     for s in snaps:
         snap = s['sname']
         if verify_consistency(up_conn, ds_conn, config, snap, sample=True):
             if verify_consistency(up_conn, ds_conn, config, snap, sample=False):
+                log.info("[green]FULL Check PASSED[/green]")
                 log.info(f"[green]Watermark RECOVERED: {snap}[/green]")
                 ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, snap)); ds_conn.commit(); return snap
     return None
