@@ -340,15 +340,18 @@ def archeology_recovery(up_conn, ds_conn, config, tid):
     return None
 
 def perform_sync(config, is_auto=False, lock_held=False):
+    start_ts = time.time()
+    sync_success = False
     u_cfg, d_cfg = config["upstream"], config["downstream"]
     tid = get_task_id(config)
     up_conn, ds_conn = DBConnection(u_cfg, "Up", autocommit=True), DBConnection(d_cfg, "Ds")
-    if not up_conn.connect() or not ds_conn.connect(db_override=""): return False
-    
     keeper = LockKeeper(d_cfg, tid)
     dfiles = []
     snapshot_created = False
     try:
+        if not up_conn.connect() or not ds_conn.connect(db_override=""):
+            log.error("Sync FAILED: connection failed")
+            return False
         ds_conn.execute(f"CREATE DATABASE IF NOT EXISTS `{d_cfg['db']}`"); ds_conn.commit()
         ensure_meta_table(ds_conn)
         if lock_held:
@@ -389,7 +392,6 @@ def perform_sync(config, is_auto=False, lock_held=False):
             return False
 
         newsnap = generate_snapshot_name(tid)
-        sync_success = False
         with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as prg:
             if not lastgood:
                 log.info(f"[blue]FULL Sync | Task: {tid}[/blue]")
@@ -456,6 +458,9 @@ def perform_sync(config, is_auto=False, lock_held=False):
             except: pass
         return False
     finally:
+        elapsed = time.time() - start_ts
+        status = "SUCCESS" if sync_success else "FAILED"
+        log.info(f"Sync duration={elapsed:.3f}s status={status}")
         if keeper.is_alive(): # Review Fix: Only join if started
             keeper.stop(); keeper.join()
         if not lock_held:
@@ -490,8 +495,11 @@ def sync_loop(config, interval):
                             ws = get_watermarks(ds, get_task_id(config))
                             if ws:
                                 sample = not (v_int > 0 and sc % v_int == 0)
+                                verify_start = time.time()
                                 ok, ur, dr = verify_consistency(up, ds, config, ws[0], sample=sample, return_detail=True)
                                 log_verify_result(ok, ur, dr, sample=sample, snapshot_label=ws[0])
+                                verify_elapsed = time.time() - verify_start
+                                log.info(f"Verify duration={verify_elapsed:.3f}s mode={'FAST' if sample else 'FULL'} snapshot={ws[0]}")
                                 if not ok:
                                     log.warning("Consistency check FAILED; please investigate.")
                             up.close(); ds.close()
@@ -548,26 +556,49 @@ def main():
                     ok, ur, dr = verify_consistency(up, ds, config, snap, return_detail=True)
                 up.close(); ds.close()
                 return ok, ur, dr
+            verify_start = time.time()
             ok, ur, dr = run_with_activity_indicator("Verify Consistency", do_verify)
             log_verify_result(ok, ur, dr, sample=False, snapshot_label=snap_label)
+            verify_elapsed = time.time() - verify_start
+            log.info(f"Verify duration={verify_elapsed:.3f}s mode=FULL snapshot={snap_label}")
         elif c == "Manual Sync Now":
             run_with_activity_indicator("Manual Sync", lambda: perform_sync(config))
         elif c == "Automatic Mode":
-            interval = int(questionary.text("Interval (sec):", default=str(config.get("sync_interval", 60))).ask())
+            val = questionary.text("Interval (sec):", default=str(config.get("sync_interval", 60))).ask()
+            if val is None:
+                continue
+            try:
+                interval = int(val)
+            except ValueError:
+                log.warning(f"Invalid interval: {val}")
+                continue
             config["sync_interval"] = interval; save_config(config); sync_loop(config, interval)
 
 def setup_config(existing=None):
     w = existing if existing else {"upstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db1", "table": "t1"}, "downstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db2", "table": "t2"}, "stage": {"name": "s1"}, "sync_interval": 60, "verify_interval": 50}
     def text_default(value):
         return "" if value is None else str(value)
+    def ask_text(prompt, default, secret=False):
+        if secret:
+            res = questionary.password(prompt, default=default).ask()
+        else:
+            res = questionary.text(prompt, default=default).ask()
+        return default if res is None else res
     while True:
         table = Table(title="Config"); table.add_row("Up", f"{w['upstream']['db']}.{w['upstream']['table']}"); table.add_row("Ds", f"{w['downstream']['db']}.{w['downstream']['table']}"); table.add_row("Verify", str(w.get('verify_interval'))); console.print(table)
         c = questionary.select("Action:", choices=["Edit Upstream", "Edit Downstream", "Edit Stage", "Edit Verify Interval", "Save", "Discard"]).ask()
         if c == "Save": save_config(w); return w
-        if c == "Edit Upstream": w["upstream"] = {"host": questionary.text("Host:", default=text_default(w["upstream"].get("host"))).ask(), "port": questionary.text("Port:", default=text_default(w["upstream"].get("port"))).ask(), "user": questionary.text("User:", default=text_default(w["upstream"].get("user"))).ask(), "password": questionary.password("Pass:", default=text_default(w["upstream"].get("password"))).ask(), "db": questionary.text("DB:", default=text_default(w["upstream"].get("db"))).ask(), "table": questionary.text("Table:", default=text_default(w["upstream"].get("table"))).ask()}
-        if c == "Edit Downstream": w["downstream"] = {"host": questionary.text("Host:", default=text_default(w["downstream"].get("host"))).ask(), "port": questionary.text("Port:", default=text_default(w["downstream"].get("port"))).ask(), "user": questionary.text("User:", default=text_default(w["downstream"].get("user"))).ask(), "password": questionary.password("Pass:", default=text_default(w["downstream"].get("password"))).ask(), "db": questionary.text("DB:", default=text_default(w["downstream"].get("db"))).ask(), "table": questionary.text("Table:", default=text_default(w["downstream"].get("table"))).ask()}
-        if c == "Edit Stage": w["stage"] = {"name": questionary.text("Stage Name:", default=text_default(w.get("stage", {}).get("name"))).ask()}
-        if c == "Edit Verify Interval": w["verify_interval"] = int(questionary.text("Interval:", default=text_default(w.get("verify_interval", 50))).ask())
+        if c == "Edit Upstream": w["upstream"] = {"host": ask_text("Host:", text_default(w["upstream"].get("host"))), "port": ask_text("Port:", text_default(w["upstream"].get("port"))), "user": ask_text("User:", text_default(w["upstream"].get("user"))), "password": ask_text("Pass:", text_default(w["upstream"].get("password")), secret=True), "db": ask_text("DB:", text_default(w["upstream"].get("db"))), "table": ask_text("Table:", text_default(w["upstream"].get("table")))}
+        if c == "Edit Downstream": w["downstream"] = {"host": ask_text("Host:", text_default(w["downstream"].get("host"))), "port": ask_text("Port:", text_default(w["downstream"].get("port"))), "user": ask_text("User:", text_default(w["downstream"].get("user"))), "password": ask_text("Pass:", text_default(w["downstream"].get("password")), secret=True), "db": ask_text("DB:", text_default(w["downstream"].get("db"))), "table": ask_text("Table:", text_default(w["downstream"].get("table")))}
+        if c == "Edit Stage": w["stage"] = {"name": ask_text("Stage Name:", text_default(w.get("stage", {}).get("name")))}
+        if c == "Edit Verify Interval":
+            val = questionary.text("Interval:", default=text_default(w.get("verify_interval", 50))).ask()
+            if val is None:
+                continue
+            try:
+                w["verify_interval"] = int(val)
+            except ValueError:
+                log.warning(f"Invalid verify interval: {val}")
         if c == "Discard" or c is None: return existing
 
 if __name__ == "__main__":
