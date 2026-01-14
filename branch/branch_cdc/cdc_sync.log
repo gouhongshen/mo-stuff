@@ -2365,3 +2365,7 @@ Snapshot cdc_cc1f875747cf_260113191325416 lost. Resetting to FULL sync.
 Sync FAILED: (20301, 'invalid input: the data of row 1 contained is not equal to input columns')
 [blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_full_txn_up_t_to_cdc_rev_full_txn_ds_t[/blue]
 Sync FAILED: (20301, 'invalid input: the data of row 1 contained is not equal to input columns')
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_full_txn_up_t_to_cdc_rev_full_txn_ds_t[/blue]
+Sync FAILED: (20301, 'invalid input: the data of row 1 contained is not equal to input columns')
+[blue]FULL Sync | Task: 127_0_0_1_6001_cdc_rev_full_txn_up_t_to_cdc_rev_full_txn_ds_t[/blue]
+Sync FAILED: (20301, 'invalid input: the data of row 1 contained is not equal to input columns')
