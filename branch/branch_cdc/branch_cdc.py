@@ -14,7 +14,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 os.makedirs(BASE_DIR, exist_ok=True)
 
-parser = argparse.ArgumentParser(description="MatrixOne CDC Tool v4.0")
+parser = argparse.ArgumentParser(description="MatrixOne CDC Tool v4.1")
 parser.add_argument("--log-file", default=os.path.join(BASE_DIR, "cdc_sync.log"))
 parser.add_argument("--mode", choices=["manual", "auto"])
 parser.add_argument("--interval", type=int)
@@ -109,7 +109,7 @@ def get_watermarks(ds_conn, tid):
 def get_check_sql(conn, db, table, snap=None, sample=False):
     sc = f"{{snapshot = '{snap}'}}" if snap else ""
     try: cols = conn.query(f"SHOW COLUMNS FROM `{db}`.`{table}`")
-    except: return "SELECT 0 as c, 0 as h"
+    except: return None # Review Fix: Explicit return None when table missing
     pk_col = next((c['Field'] for c in cols if c['Key'] == 'PRI'), "__mo_fake_pk_col")
     p_cols = [f"IFNULL(HEX(`{c['Field']}`), 'NULL')" if "vec" in c['Type'].lower() else f"IFNULL(CAST(`{c['Field']}` AS VARCHAR), 'NULL')" for c in cols]
     where = f" WHERE ABS(CRC32(CAST(`{pk_col}` AS VARCHAR))) % 100 = 7" if sample else ""
@@ -118,7 +118,9 @@ def get_check_sql(conn, db, table, snap=None, sample=False):
 def verify_consistency(up_conn, ds_conn, config, snap=None, sample=False):
     u, d = config["upstream"], config["downstream"]
     try:
-        ur, dr = up_conn.fetch_one(get_check_sql(up_conn, u['db'], u['table'], snap, sample)), ds_conn.fetch_one(get_check_sql(ds_conn, d['db'], d['table'], None, sample))
+        u_sql, d_sql = get_check_sql(up_conn, u['db'], u['table'], snap, sample), get_check_sql(ds_conn, d['db'], d['table'], None, sample)
+        if u_sql is None or d_sql is None: return False # Review Fix: Fail if table missing
+        ur, dr = up_conn.fetch_one(u_sql), ds_conn.fetch_one(d_sql)
         if ur['c'] == dr['c'] and (ur['h'] == dr['h'] or (ur['h'] is None and dr['h'] is None)):
             return True
         return False
@@ -130,8 +132,7 @@ def generate_snapshot_name(tid):
 
 def archeology_recovery(up_conn, ds_conn, config, tid):
     sid_prefix = hashlib.md5(tid.encode()).hexdigest()[:12]
-    # Review Fix: Filter snapshots by matching Database and Table name to avoid false positives
-    try: snaps = up_conn.query(f"SELECT sname FROM mo_catalog.mo_snapshots WHERE sname LIKE 'cdc_{sid_prefix}_%' AND database_name='{config['upstream']['db']}' AND table_name='{config['upstream']['table']}' ORDER BY ts DESC LIMIT 10")
+    try: snaps = up_conn.query(f"SELECT sname FROM mo_catalog.mo_snapshots WHERE sname LIKE 'cdc_{sid_prefix}_%' AND database_name=%s AND table_name=%s ORDER BY ts DESC LIMIT 10", (config['upstream']['db'], config['upstream']['table']))
     except: return None
     for s in snaps:
         snap = s['sname']
@@ -145,13 +146,10 @@ def perform_sync(config, is_auto=False):
     u_cfg, d_cfg = config["upstream"], config["downstream"]
     tid = get_task_id(config)
     up_conn, ds_conn = DBConnection(u_cfg, "Up"), DBConnection(d_cfg, "Ds")
-    
-    # Review Fix: connect() handles missing DB by returning foundation session
     if not up_conn.connect() or not ds_conn.connect(db_override=""): return False
     
     keeper = LockKeeper(d_cfg, tid)
     try:
-        # Review Fix: High priority DB creation to satisfy test_auto_create_downstream_db
         ds_conn.execute(f"CREATE DATABASE IF NOT EXISTS `{d_cfg['db']}`"); ds_conn.commit()
         ensure_meta_table(ds_conn)
         if not acquire_lock(ds_conn, tid): return False
@@ -164,27 +162,20 @@ def perform_sync(config, is_auto=False):
             ds_conn.execute(ddl); ds_conn.commit()
 
         ws = get_watermarks(ds_conn, tid)
-        lastgood, is_archeology = None, False
-        if ws: lastgood = ws[0]
-        elif target_exists:
-            # Only archeology if table has data to compare
+        lastgood = ws[0] if ws else None
+        if not lastgood and target_exists:
             ds_cnt = ds_conn.fetch_one(f"SELECT COUNT(*) as c FROM `{d_cfg['table']}`")['c']
-            if ds_cnt > 0:
-                lastgood = archeology_recovery(up_conn, ds_conn, config, tid)
-                if lastgood: is_archeology = True
+            if ds_cnt > 0: lastgood = archeology_recovery(up_conn, ds_conn, config, tid)
         
-        # Snapshot missing check
-        if lastgood:
-            if not up_conn.fetch_one(f"SELECT sname FROM mo_catalog.mo_snapshots WHERE sname = '{lastgood}'"):
-                log.warning(f"Snapshot {lastgood} lost. Resetting to FULL sync.")
-                ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,)); ds_conn.commit()
-                lastgood = None
+        if lastgood and not up_conn.fetch_one(f"SELECT sname FROM mo_catalog.mo_snapshots WHERE sname = %s", (lastgood,)):
+            log.warning(f"Snapshot {lastgood} lost. Resetting to FULL sync.")
+            ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,)); ds_conn.commit()
+            lastgood = None
 
         newsnap = generate_snapshot_name(tid)
         sync_success = False
         with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as prg:
             if not lastgood:
-                # --- FULL ---
                 log.info(f"[blue]FULL Sync | Task: {tid}[/blue]")
                 t_zero = f"{u_cfg['table']}_zero"
                 up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_zero}`"); up_conn.commit()
@@ -202,8 +193,7 @@ def perform_sync(config, is_auto=False):
                     ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, newsnap)); ds_conn.commit(); sync_success = True
                 except Exception as e: ds_conn.rollback(); raise e
             else:
-                # --- INCREMENTAL ---
-                log.info(f"[blue]INCREMENTAL Sync | Task: {tid} | From {lastgood}{' (via archeology)' if is_archeology else ''}[/blue]")
+                log.info(f"[blue]INCREMENTAL Sync | Task: {tid} | From {lastgood}[/blue]")
                 t_cp = f"{u_cfg['table']}_copy_prev"
                 up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cp}`"); up_conn.commit()
                 up_conn.execute(f"data branch create table `{u_cfg['db']}`.`{t_cp}` from `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{lastgood}'}}"); up_conn.commit()
@@ -242,7 +232,8 @@ def perform_sync(config, is_auto=False):
     except Exception as e:
         log.error(f"Sync FAILED: {e}"); return False
     finally:
-        keeper.stop(); keeper.join()
+        if keeper.is_alive(): # Review Fix: Only join if started
+            keeper.stop(); keeper.join()
         release_lock(ds_conn, tid); up_conn.close(); ds_conn.close()
 
 def sync_loop(config, interval):
@@ -260,7 +251,7 @@ def sync_loop(config, interval):
         time.sleep(interval)
 
 def main():
-    console.print(Panel.fit("MatrixOne branch_cdc v4.0", style="bold magenta"))
+    console.print(Panel.fit("MatrixOne branch_cdc v4.1", style="bold magenta"))
     config = load_config()
     if not config: config = setup_config()
     if cli_args.once: perform_sync(config); sys.exit(0)
@@ -273,7 +264,7 @@ def main():
             up, ds = DBConnection(config["upstream"], "Up"), DBConnection(config["downstream"], "Ds")
             if up.connect() and ds.connect():
                 tid = get_task_id(config); ensure_meta_table(ds); ws = get_watermarks(ds, tid)
-                if ws: verify_consistency(up, ds, config, ws[0]); 
+                if ws: verify_consistency(up, ds, config, ws[0])
                 up.close(); ds.close()
         elif c == "Manual Sync Now": perform_sync(config)
         elif c == "Automatic Mode":
