@@ -9,6 +9,7 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.logging import RichHandler
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.live import Live
 
 # --- Global Setup ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -234,16 +235,86 @@ def get_check_sql(conn, db, table, snap=None, sample=False):
     where = f" WHERE ABS(CRC32(CAST(`{pk_col}` AS VARCHAR))) % 100 = 7" if sample else ""
     return f"SELECT COUNT(*) as c, BIT_XOR(CRC32(CONCAT_WS(',', {', '.join(p_cols)}))) as h FROM `{db}`.`{table}`{sc}{where}"
 
-def verify_consistency(up_conn, ds_conn, config, snap=None, sample=False):
+def get_check_result(conn, db, table, snap=None, sample=False):
+    sql = get_check_sql(conn, db, table, snap, sample)
+    if sql is None:
+        return None
+    return conn.fetch_one(sql)
+
+def verify_consistency(up_conn, ds_conn, config, snap=None, sample=False, return_detail=False):
     u, d = config["upstream"], config["downstream"]
     try:
-        u_sql, d_sql = get_check_sql(up_conn, u['db'], u['table'], snap, sample), get_check_sql(ds_conn, d['db'], d['table'], None, sample)
-        if u_sql is None or d_sql is None: return False # Review Fix: Fail if table missing
-        ur, dr = up_conn.fetch_one(u_sql), ds_conn.fetch_one(d_sql)
-        if ur['c'] == dr['c'] and (ur['h'] == dr['h'] or (ur['h'] is None and dr['h'] is None)):
-            return True
+        ur, dr = get_check_result(up_conn, u['db'], u['table'], snap, sample), get_check_result(ds_conn, d['db'], d['table'], None, sample)
+        if ur is None or dr is None:
+            ok = False
+        else:
+            ok = ur['c'] == dr['c'] and (ur['h'] == dr['h'] or (ur['h'] is None and dr['h'] is None))
+        if return_detail:
+            return ok, ur, dr
+        return ok
+    except:
+        if return_detail:
+            return False, None, None
         return False
-    except: return False
+
+def format_check_value(val):
+    if val is None:
+        return "NULL"
+    return str(val)
+
+def log_verify_result(ok, ur, dr, sample=False):
+    mode = "FAST" if sample else "FULL"
+    if ok and ur:
+        log.info(f"[green]{mode} VERIFY PASSED[/green] upstream rows={ur['c']} hash={format_check_value(ur['h'])}")
+        return
+    u_cnt = ur['c'] if ur else "N/A"
+    u_hash = format_check_value(ur['h']) if ur else "N/A"
+    d_cnt = dr['c'] if dr else "N/A"
+    d_hash = format_check_value(dr['h']) if dr else "N/A"
+    log.error(f"[red]{mode} VERIFY FAILED[/red] upstream rows={u_cnt} hash={u_hash} downstream rows={d_cnt} hash={d_hash}")
+
+def run_with_activity_indicator(title, action_fn):
+    result = {"value": None, "error": None}
+    done = threading.Event()
+
+    def runner():
+        try:
+            result["value"] = action_fn()
+        except Exception as e:
+            result["error"] = e
+        finally:
+            done.set()
+
+    thread = threading.Thread(target=runner, daemon=True)
+    thread.start()
+
+    width = 10
+    frames = []
+    for i in range(width):
+        bar = ["-"] * width
+        bar[i] = "#"
+        frames.append("[" + "".join(bar) + "]")
+    for i in range(width - 2, 0, -1):
+        bar = ["-"] * width
+        bar[i] = "#"
+        frames.append("[" + "".join(bar) + "]")
+
+    idx = 0
+    with Live(console=console, refresh_per_second=8) as live:
+        while not done.is_set():
+            frame = frames[idx % len(frames)]
+            tbl = Table.grid(padding=(0, 1))
+            tbl.add_row("Action", title)
+            tbl.add_row("Status", "RUNNING")
+            tbl.add_row("Pulse", frame)
+            live.update(Panel(tbl, title="Working"))
+            time.sleep(0.12)
+            idx += 1
+
+    thread.join()
+    if result["error"]:
+        raise result["error"]
+    return result["value"]
 
 def generate_snapshot_name(tid):
     sid = hashlib.md5(tid.encode()).hexdigest()[:12]
@@ -417,7 +488,9 @@ def sync_loop(config, interval):
                         if up.connect() and ds.connect():
                             ws = get_watermarks(ds, get_task_id(config))
                             if ws:
-                                ok = verify_consistency(up, ds, config, ws[0], sample=not (v_int > 0 and sc % v_int == 0))
+                                sample = not (v_int > 0 and sc % v_int == 0)
+                                ok, ur, dr = verify_consistency(up, ds, config, ws[0], sample=sample, return_detail=True)
+                                log_verify_result(ok, ur, dr, sample=sample)
                                 if not ok:
                                     log.warning("Consistency check FAILED; please investigate.")
                             up.close(); ds.close()
@@ -449,12 +522,19 @@ def main():
         if c == "Exit": sys.exit(0)
         elif c == "Edit Configuration": config = setup_config(config)
         elif c == "Verify Consistency":
-            up, ds = DBConnection(config["upstream"], "Up", autocommit=True), DBConnection(config["downstream"], "Ds", autocommit=True)
-            if up.connect() and ds.connect():
-                tid = get_task_id(config); ensure_meta_table(ds); ws = get_watermarks(ds, tid)
-                if ws: verify_consistency(up, ds, config, ws[0])
+            def do_verify():
+                up, ds = DBConnection(config["upstream"], "Up", autocommit=True), DBConnection(config["downstream"], "Ds", autocommit=True)
+                ok, ur, dr = False, None, None
+                if up.connect() and ds.connect():
+                    tid = get_task_id(config); ensure_meta_table(ds); ws = get_watermarks(ds, tid)
+                    if ws:
+                        ok, ur, dr = verify_consistency(up, ds, config, ws[0], return_detail=True)
                 up.close(); ds.close()
-        elif c == "Manual Sync Now": perform_sync(config)
+                return ok, ur, dr
+            ok, ur, dr = run_with_activity_indicator("Verify Consistency", do_verify)
+            log_verify_result(ok, ur, dr, sample=False)
+        elif c == "Manual Sync Now":
+            run_with_activity_indicator("Manual Sync", lambda: perform_sync(config))
         elif c == "Automatic Mode":
             interval = int(questionary.text("Interval (sec):", default=str(config.get("sync_interval", 60))).ask())
             config["sync_interval"] = interval; save_config(config); sync_loop(config, interval)
