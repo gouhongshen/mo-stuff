@@ -1,22 +1,22 @@
 {
     "upstream": {
         "host": "127.0.0.1",
-        "port": 6001,
+        "port": "6001",
         "user": "dump",
         "password": "111",
-        "db": "cdc_crash_up",
-        "table": "crash_tbl"
+        "db": "tpcc",
+        "table": "bmsql_order_line"
     },
     "downstream": {
         "host": "127.0.0.1",
-        "port": 6001,
+        "port": "6001",
         "user": "dump",
         "password": "111",
-        "db": "cdc_crash_ds",
-        "table": "crash_tbl"
+        "db": "tpcc_ds",
+        "table": "bmsql_order_line"
     },
     "stage": {
-        "name": "cdc_crash_stage"
+        "name": "stage01"
     },
     "sync_interval": 5
 }

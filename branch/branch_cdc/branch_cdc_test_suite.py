@@ -44,7 +44,7 @@ def run_sync(ds_cfg):
     return perform_sync(config)
 
 def main():
-    console.print(Panel.fit("MatrixOne CDC Torture Test v3.2 (Review Verified)", style="bold magenta"))
+    console.print(Panel.fit("MatrixOne BRANCH CDC Torture Test v3.2 (Review Verified)", style="bold magenta"))
     setup_env()
 
     # Phase 1: Initial Sync

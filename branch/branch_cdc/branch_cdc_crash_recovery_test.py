@@ -44,7 +44,7 @@ def test_crash_and_recovery():
     # Force clean meta lock
     admin = DBConnection(ADMIN_CFG, "Admin")
     admin.connect()
-    admin.execute("UPDATE cdc_by_data_branch_db.meta_lock SET lock_owner=NULL, lock_time=NULL")
+    admin.execute("UPDATE branch_cdc_db.meta_lock SET lock_owner=NULL, lock_time=NULL")
     admin.commit(); admin.close()
     
     print("[CRASH] Restarting CDC for recovery...")
