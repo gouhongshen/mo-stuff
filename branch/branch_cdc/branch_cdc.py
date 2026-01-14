@@ -81,12 +81,20 @@ def save_config(config, path=None):
     with open(cfg_path, "w") as f: json.dump(config, f, indent=4)
 def get_task_id(config):
     u, d = config["upstream"], config["downstream"]
-    return f"{u['host']}_{u['port']}_{u['db']}_{u['table']}_to_{d['db']}_{d['table']}".replace(".", "_")
+    return f"{u['host']}_{u['port']}_{u['db']}_{u['table']}_to_{d['host']}_{d['port']}_{d['db']}_{d['table']}".replace(".", "_")
 
 def ensure_meta_table(ds_conn):
     ds_conn.execute(f"CREATE DATABASE IF NOT EXISTS `{META_DB}`"); ds_conn.commit()
-    ds_conn.execute(f"CREATE TABLE IF NOT EXISTS `{META_DB}`.`{META_TABLE}` (task_id VARCHAR(255), watermark VARCHAR(255), lock_owner VARCHAR(255), lock_time TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"); ds_conn.commit()
-    ds_conn.execute(f"CREATE TABLE IF NOT EXISTS `{META_DB}`.`{META_LOCK_TABLE}` (task_id VARCHAR(255) PRIMARY KEY, lock_owner VARCHAR(255), lock_time TIMESTAMP)"); ds_conn.commit()
+    ds_conn.execute(f"CREATE TABLE IF NOT EXISTS `{META_DB}`.`{META_TABLE}` (task_id VARCHAR(512), watermark VARCHAR(255), lock_owner VARCHAR(255), lock_time TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"); ds_conn.commit()
+    ds_conn.execute(f"CREATE TABLE IF NOT EXISTS `{META_DB}`.`{META_LOCK_TABLE}` (task_id VARCHAR(512) PRIMARY KEY, lock_owner VARCHAR(255), lock_time TIMESTAMP)"); ds_conn.commit()
+    try:
+        ds_conn.execute(f"ALTER TABLE `{META_DB}`.`{META_TABLE}` MODIFY COLUMN task_id VARCHAR(512)"); ds_conn.commit()
+    except:
+        pass
+    try:
+        ds_conn.execute(f"ALTER TABLE `{META_DB}`.`{META_LOCK_TABLE}` MODIFY COLUMN task_id VARCHAR(512)"); ds_conn.commit()
+    except:
+        pass
 
 def acquire_lock(ds_conn, tid):
     if not ds_conn.fetch_one(f"SELECT 1 FROM `{META_DB}`.`{META_LOCK_TABLE}` WHERE task_id=%s", (tid,)):
@@ -333,32 +341,60 @@ def decide_verify_sample(up_conn, u_cols, ds_cols, config, snap, requested_sampl
 
 def verify_consistency(up_conn, ds_conn, config, snap=None, sample=False, return_detail=False):
     u, d = config["upstream"], config["downstream"]
+    err = None
+    u_time = None
+    d_time = None
     try:
         u_cols = get_table_columns(up_conn, u["db"], u["table"])
         d_cols = get_table_columns(ds_conn, d["db"], d["table"])
         if not u_cols or not d_cols:
             if return_detail:
-                return False, None, None, False
+                err = "failed to load table columns"
+                return False, None, None, False, err, u_time, d_time
             return False
         use_sample = decide_verify_sample(up_conn, u_cols, d_cols, config, snap, sample)
         u_sql = build_check_sql(u["db"], u["table"], u_cols, snap, use_sample)
         d_sql = build_check_sql(d["db"], d["table"], d_cols, None, use_sample)
         if u_sql is None or d_sql is None:
             if return_detail:
-                return False, None, None, use_sample
+                err = "failed to build verify SQL"
+                return False, None, None, use_sample, err, u_time, d_time
             return False
-        ur, dr = up_conn.fetch_one(u_sql), ds_conn.fetch_one(d_sql)
+        u_start = time.time()
+        ur = up_conn.fetch_one(u_sql)
+        u_time = time.time() - u_start
+        d_start = time.time()
+        dr = ds_conn.fetch_one(d_sql)
+        d_time = time.time() - d_start
         if ur is None or dr is None:
+            err = "verify query returned empty result"
             ok = False
         else:
             ok = ur['c'] == dr['c'] and (ur['h'] == dr['h'] or (ur['h'] is None and dr['h'] is None))
         if return_detail:
-            return ok, ur, dr, use_sample
+            return ok, ur, dr, use_sample, err, u_time, d_time
         return ok
-    except:
+    except Exception as e:
+        err = str(e)
         if return_detail:
-            return False, None, None, False
+            return False, None, None, False, err, u_time, d_time
         return False
+
+def verify_watermark_consistency(up_conn, ds_conn, config, snap, retries=3, wait_sec=5):
+    for attempt in range(1, retries + 1):
+        ok, ur, dr, used_sample, err, _, _ = verify_consistency(up_conn, ds_conn, config, snap, sample=True, return_detail=True)
+        if ok:
+            return True
+        if err or ur is None or dr is None:
+            msg = err or "verify returned empty result"
+            log.warning(f"Watermark check error (attempt {attempt}/{retries}): {msg}")
+            if attempt < retries:
+                time.sleep(wait_sec)
+                continue
+            return None
+        log_verify_result(False, ur, dr, sample=used_sample, snapshot_label=snap)
+        return False
+    return None
 
 def format_check_value(val):
     if val is None:
@@ -456,7 +492,7 @@ def archeology_recovery(up_conn, ds_conn, config, tid):
     except: return None
     for s in snaps:
         snap = s['sname']
-        ok, _, _, used_sample = verify_consistency(up_conn, ds_conn, config, snap, sample=True, return_detail=True)
+        ok, _, _, used_sample, _, _, _ = verify_consistency(up_conn, ds_conn, config, snap, sample=True, return_detail=True)
         if ok:
             if used_sample or verify_consistency(up_conn, ds_conn, config, snap, sample=False):
                 log.info("[green]FULL Check PASSED[/green]")
@@ -466,6 +502,8 @@ def archeology_recovery(up_conn, ds_conn, config, tid):
 
 def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
     start_ts = time.time()
+    diff_elapsed = 0.0
+    apply_elapsed = 0.0
     sync_success = False
     sync_status = "FAILED"
     sync_noop = False
@@ -507,10 +545,15 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
             log.warning(f"Snapshot {lastgood} lost. Resetting to FULL sync.")
             ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,)); ds_conn.commit()
             lastgood = None
-        if lastgood and not verify_consistency(up_conn, ds_conn, config, lastgood, sample=True):
-            log.warning("Watermark inconsistent with downstream; resetting to FULL sync.")
-            ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,)); ds_conn.commit()
-            lastgood = None
+        if lastgood:
+            check = verify_watermark_consistency(up_conn, ds_conn, config, lastgood)
+            if check is False:
+                log.warning("Watermark inconsistent with downstream; resetting to FULL sync.")
+                ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,)); ds_conn.commit()
+                lastgood = None
+            elif check is None:
+                log.error("Watermark check failed after retries; skipping this sync.")
+                return False
 
         stage_name, stage_url = get_stage_config(config)
         if not stage_name:
@@ -527,10 +570,13 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
                 t_zero = f"{u_cfg['table']}_zero"
                 up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_zero}`"); up_conn.commit()
                 up_conn.execute(f"CREATE TABLE `{u_cfg['db']}`.`{t_zero}` LIKE `{u_cfg['db']}`.`{u_cfg['table']}`"); up_conn.commit()
+                diff_start = time.time()
                 up_conn.execute(f"CREATE SNAPSHOT `{newsnap}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}`"); up_conn.commit(); snapshot_created = True
                 try: dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{newsnap}'}} against `{u_cfg['db']}`.`{t_zero}` output file 'stage://{stage_name}'")
                 finally: up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_zero}`"); up_conn.commit()
+                diff_elapsed += time.time() - diff_start
                 
+                apply_start = time.time()
                 ds_conn.conn.begin()
                 try:
                     ds_conn.execute(f"TRUNCATE TABLE `{d_cfg['db']}`.`{d_cfg['table']}`")
@@ -539,16 +585,22 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
                         if not f: continue
                         ds_conn.execute(f"LOAD DATA INFILE '{f}' INTO TABLE `{d_cfg['db']}`.`{d_cfg['table']}` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '{qt}' ESCAPED BY '{sl}{sl}' LINES TERMINATED BY '{sl}n' PARALLEL 'TRUE'")
                     ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, newsnap)); ds_conn.commit(); sync_success = True
-                except Exception as e: ds_conn.rollback(); raise e
+                except Exception as e:
+                    ds_conn.rollback(); raise e
+                finally:
+                    apply_elapsed += time.time() - apply_start
             else:
                 log.info(f"[blue]INCREMENTAL Sync | Task: {tid} | From {lastgood}[/blue]")
                 t_cp = f"{u_cfg['table']}_copy_prev"
                 up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cp}`"); up_conn.commit()
                 up_conn.execute(f"data branch create table `{u_cfg['db']}`.`{t_cp}` from `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{lastgood}'}}"); up_conn.commit()
+                diff_start = time.time()
                 up_conn.execute(f"CREATE SNAPSHOT `{newsnap}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}`"); up_conn.commit(); snapshot_created = True
                 try: dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot = '{newsnap}'}} against `{u_cfg['db']}`.`{t_cp}` output file 'stage://{stage_name}'")
                 finally: up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cp}`"); up_conn.commit()
+                diff_elapsed += time.time() - diff_start
                 
+                apply_start = time.time()
                 ds_conn.conn.begin()
                 try:
                     applied_stmt_count = 0
@@ -569,7 +621,10 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
                         sync_noop = True
                     else:
                         ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, newsnap)); ds_conn.commit(); sync_success = True
-                except Exception as e: ds_conn.rollback(); raise e
+                except Exception as e:
+                    ds_conn.rollback(); raise e
+                finally:
+                    apply_elapsed += time.time() - apply_start
         
         if sync_noop:
             sync_status = "NOOP"
@@ -607,7 +662,7 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
         return False
     finally:
         elapsed = time.time() - start_ts
-        log.info(f"Sync duration={elapsed:.3f}s status={sync_status}")
+        log.info(f"Sync duration={diff_elapsed:.3f}/{apply_elapsed:.3f}/{elapsed:.3f}s status={sync_status}")
         log.info("-" * 72)
         if keeper.is_alive(): # Review Fix: Only join if started
             keeper.stop(); keeper.join()
@@ -648,10 +703,12 @@ def sync_loop(config, interval):
                             if ws:
                                 sample = not (v_int > 0 and sc % v_int == 0)
                                 verify_start = time.time()
-                                ok, ur, dr, used_sample = verify_consistency(up, ds, config, ws[0], sample=sample, return_detail=True)
+                                ok, ur, dr, used_sample, _, u_time, d_time = verify_consistency(up, ds, config, ws[0], sample=sample, return_detail=True)
                                 log_verify_result(ok, ur, dr, sample=used_sample, snapshot_label=ws[0])
                                 verify_elapsed = time.time() - verify_start
-                                log.info(f"Verify duration={verify_elapsed:.3f}s mode={'FAST' if used_sample else 'FULL'} snapshot={ws[0]}")
+                                u_dur = u_time or 0.0
+                                d_dur = d_time or 0.0
+                                log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode={'FAST' if used_sample else 'FULL'} snapshot={ws[0]}")
                                 if not ok:
                                     log.warning("Consistency check FAILED; please investigate.")
                                 else:
@@ -715,16 +772,18 @@ def main():
                 up, ds = DBConnection(config["upstream"], "Up", autocommit=True), DBConnection(config["downstream"], "Ds", autocommit=True)
                 ok, ur, dr, used_sample = False, None, None, False
                 if up.connect() and ds.connect():
-                    ok, ur, dr, used_sample = verify_consistency(up, ds, config, snap, return_detail=True)
+                    ok, ur, dr, used_sample, _, u_time, d_time = verify_consistency(up, ds, config, snap, return_detail=True)
                     if ok:
                         cleanup_snapshots_after_verify(up, ds, config, snap)
                 up.close(); ds.close()
-                return ok, ur, dr, used_sample
+                return ok, ur, dr, used_sample, u_time, d_time
             verify_start = time.time()
-            ok, ur, dr, used_sample = run_with_activity_indicator("Verify Consistency", do_verify, config, last_sync, last_verify, last_error)
+            ok, ur, dr, used_sample, u_time, d_time = run_with_activity_indicator("Verify Consistency", do_verify, config, last_sync, last_verify, last_error)
             log_verify_result(ok, ur, dr, sample=used_sample, snapshot_label=snap_label)
             verify_elapsed = time.time() - verify_start
-            log.info(f"Verify duration={verify_elapsed:.3f}s mode={'FAST' if used_sample else 'FULL'} snapshot={snap_label}")
+            u_dur = u_time or 0.0
+            d_dur = d_time or 0.0
+            log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode={'FAST' if used_sample else 'FULL'} snapshot={snap_label}")
             last_verify = f"{time.strftime('%Y-%m-%d %H:%M:%S')} ({'FAST' if used_sample else 'FULL'})"
             if not ok:
                 last_error = "Verify failed"

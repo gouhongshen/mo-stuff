@@ -8,15 +8,15 @@
         "table": "bmsql_order_line"
     },
     "downstream": {
-        "host": "127.0.0.1",
+        "host": "freetier-01.cn-hangzhou.cluster.cn-dev.matrixone.tech",
         "port": "6001",
-        "user": "dump",
+        "user": "acc1:root1",
         "password": "111",
         "db": "tpcc_ds",
         "table": "bmsql_order_line"
     },
     "stage": {
-        "name": "stage01"
+        "name": "stage02"
     },
-    "sync_interval": 5
+    "sync_interval": 30
 }

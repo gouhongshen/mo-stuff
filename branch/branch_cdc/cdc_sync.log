@@ -974,3 +974,209 @@ Verify duration=2.345s mode=FULL snapshot=branch_cdc_f1a43d5af9fc_26011415470964
 Verify duration=2.228s mode=FULL snapshot=branch_cdc_f1a43d5af9fc_260114154701668
 [green]FULL VERIFY PASSED[/green] upstream rows=3808525 hash=1409130014 snapshot=LATEST
 Verify duration=2.117s mode=FULL snapshot=LATEST
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line[/blue]
+Sync FAILED: (20300, 'invalid configuration: Stage stage01 not found')
+Sync duration=1.824s status=FAILED
+------------------------------------------------------------------------
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114160912674[/green]
+Sync duration=23.578s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114160912674[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161027251[/green]
+Sync duration=15.262s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114161027251[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161111803[/green]
+Sync duration=11.195s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114161111803[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161155528[/green]
+Sync duration=14.164s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114161155528[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161237509[/green]
+Sync duration=10.456s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114161237509[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161319589[/green]
+Sync duration=12.225s status=SUCCESS
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=3899328 hash=336240976 snapshot=branch_cdc_f1a43d5af9fc_260114161319589
+Verify duration=7.464s mode=FULL snapshot=branch_cdc_f1a43d5af9fc_260114161319589
+Snapshot cleanup: keep 4, drop 4
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114161319589[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161408056[/green]
+Sync duration=10.967s status=SUCCESS
+------------------------------------------------------------------------
+Watermark inconsistent with downstream; resetting to FULL sync.
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161449682[/green]
+Sync duration=32.581s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114161449682[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161553599[/green]
+Sync duration=16.345s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114161553599[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161640327[/green]
+Sync duration=12.342s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114161640327[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161721875[/green]
+Sync duration=11.795s status=SUCCESS
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=4000705 hash=1193406606 snapshot=branch_cdc_f1a43d5af9fc_260114161721875
+Verify duration=6.998s mode=FULL snapshot=branch_cdc_f1a43d5af9fc_260114161721875
+Snapshot cleanup: keep 4, drop 4
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114161721875[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161810167[/green]
+Sync duration=12.585s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114161810167[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161853041[/green]
+Sync duration=11.247s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114161853041[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114161935598[/green]
+Sync duration=12.528s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114161935598[/blue]
+[green]Sync SUCCESS | branch_cdc_f1a43d5af9fc_260114162018452[/green]
+Sync duration=12.915s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114162018452[/blue]
+[yellow]Sync NOOP | branch_cdc_f1a43d5af9fc_260114162059480[/yellow]
+Sync duration=8.002s status=NOOP
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=4075112 hash=2868892162 snapshot=branch_cdc_f1a43d5af9fc_260114162018452
+Verify duration=7.548s mode=FULL snapshot=branch_cdc_f1a43d5af9fc_260114162018452
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114162018452[/blue]
+[yellow]Sync NOOP | branch_cdc_f1a43d5af9fc_260114162144732[/yellow]
+Sync duration=7.357s status=NOOP
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114162018452[/blue]
+[yellow]Sync NOOP | branch_cdc_f1a43d5af9fc_260114162222406[/yellow]
+Sync duration=7.659s status=NOOP
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114162018452[/blue]
+[yellow]Sync NOOP | branch_cdc_f1a43d5af9fc_260114162301223[/yellow]
+Sync duration=8.931s status=NOOP
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114162018452[/blue]
+[yellow]Sync NOOP | branch_cdc_f1a43d5af9fc_260114162340435[/yellow]
+Sync duration=9.122s status=NOOP
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114162018452[/blue]
+[yellow]Sync NOOP | branch_cdc_f1a43d5af9fc_260114162420149[/yellow]
+Sync duration=9.391s status=NOOP
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=4075112 hash=2868892162 snapshot=branch_cdc_f1a43d5af9fc_260114162018452
+Verify duration=6.633s mode=FULL snapshot=branch_cdc_f1a43d5af9fc_260114162018452
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114162018452[/blue]
+[yellow]Sync NOOP | branch_cdc_f1a43d5af9fc_260114162504883[/yellow]
+Sync duration=8.073s status=NOOP
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114162018452[/blue]
+[yellow]Sync NOOP | branch_cdc_f1a43d5af9fc_260114162544018[/yellow]
+Sync duration=9.374s status=NOOP
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114162018452[/blue]
+[yellow]Sync NOOP | branch_cdc_f1a43d5af9fc_260114162623332[/yellow]
+Sync duration=8.691s status=NOOP
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114162018452[/blue]
+[yellow]Sync NOOP | branch_cdc_f1a43d5af9fc_260114162702871[/yellow]
+Sync duration=9.531s status=NOOP
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114162018452[/blue]
+[yellow]Sync NOOP | branch_cdc_f1a43d5af9fc_260114162740648[/yellow]
+Sync duration=7.582s status=NOOP
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=4075112 hash=2868892162 snapshot=branch_cdc_f1a43d5af9fc_260114162018452
+Verify duration=7.401s mode=FULL snapshot=branch_cdc_f1a43d5af9fc_260114162018452
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_tpcc_ds_bmsql_order_line | From branch_cdc_f1a43d5af9fc_260114162018452[/blue]
+[yellow]Sync NOOP | branch_cdc_f1a43d5af9fc_260114162827517[/yellow]
+Sync duration=9.388s status=NOOP
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+[green]FULL VERIFY PASSED[/green] upstream rows=4075112 hash=2868892162 snapshot=LATEST
+Verify duration=9.188s mode=FULL snapshot=LATEST
+[red]FULL VERIFY FAILED[/red] upstream rows=4192337 hash=3188496923 downstream rows=4075112 hash=2868892162 snapshot=LATEST
+Verify duration=9.499s mode=FULL snapshot=LATEST
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line[/blue]
+[green]Sync SUCCESS | branch_cdc_f02b18c91ef1_260114163222184[/green]
+Sync duration=23.699s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line | From branch_cdc_f02b18c91ef1_260114163222184[/blue]
+[green]Sync SUCCESS | branch_cdc_f02b18c91ef1_260114163323313[/green]
+Sync duration=25.755s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line | From branch_cdc_f02b18c91ef1_260114163323313[/blue]
+[green]Sync SUCCESS | branch_cdc_f02b18c91ef1_260114163418932[/green]
+Sync duration=30.951s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line | From branch_cdc_f02b18c91ef1_260114163418932[/blue]
+[green]Sync SUCCESS | branch_cdc_f02b18c91ef1_260114163524437[/green]
+Sync duration=28.025s status=SUCCESS
+------------------------------------------------------------------------
+[red]FULL VERIFY FAILED[/red] upstream rows=4557860 hash=730526105 downstream rows=4557619 hash=1799443139 snapshot=branch_cdc_f02b18c91ef1_260114163524437
+Watermark inconsistent with downstream; resetting to FULL sync.
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line[/blue]
+[green]Sync SUCCESS | branch_cdc_f02b18c91ef1_260114163619644[/green]
+Sync duration=37.667s status=SUCCESS
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=4651001 hash=3624062815 snapshot=branch_cdc_f02b18c91ef1_260114163619644
+Verify duration=7.531s mode=FULL snapshot=branch_cdc_f02b18c91ef1_260114163619644
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line | From branch_cdc_f02b18c91ef1_260114163619644[/blue]
+[green]Sync SUCCESS | branch_cdc_f02b18c91ef1_260114163734011[/green]
+Sync duration=22.899s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line | From branch_cdc_f02b18c91ef1_260114163734011[/blue]
+[green]Sync SUCCESS | branch_cdc_f02b18c91ef1_260114163828875[/green]
+Sync duration=28.801s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line | From branch_cdc_f02b18c91ef1_260114163828875[/blue]
+[green]Sync SUCCESS | branch_cdc_f02b18c91ef1_260114163926828[/green]
+Sync duration=24.885s status=SUCCESS
+------------------------------------------------------------------------
+[red]FULL VERIFY FAILED[/red] upstream rows=4936901 hash=590782895 downstream rows=4936837 hash=3616668267 snapshot=branch_cdc_f02b18c91ef1_260114163926828
+Watermark inconsistent with downstream; resetting to FULL sync.
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line[/blue]
+[green]Sync SUCCESS | branch_cdc_f02b18c91ef1_260114164022732[/green]
+Sync duration=37.441s status=SUCCESS
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line | From branch_cdc_f02b18c91ef1_260114164022732[/blue]
+[green]Sync SUCCESS | branch_cdc_f02b18c91ef1_260114164129928[/green]
+Sync duration=27.196s status=SUCCESS
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=5100121 hash=3698074749 snapshot=branch_cdc_f02b18c91ef1_260114164129928
+Verify duration=8.053s mode=FULL snapshot=branch_cdc_f02b18c91ef1_260114164129928
+Snapshot cleanup: keep 4, drop 5
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line | From branch_cdc_f02b18c91ef1_260114164129928[/blue]
+[yellow]Sync NOOP | branch_cdc_f02b18c91ef1_260114164234522[/yellow]
+Sync duration=9.320s status=NOOP
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line | From branch_cdc_f02b18c91ef1_260114164129928[/blue]
+[yellow]Sync NOOP | branch_cdc_f02b18c91ef1_260114164316557[/yellow]
+Sync duration=12.039s status=NOOP
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line | From branch_cdc_f02b18c91ef1_260114164129928[/blue]
+[yellow]Sync NOOP | branch_cdc_f02b18c91ef1_260114164355784[/yellow]
+Sync duration=8.857s status=NOOP
+------------------------------------------------------------------------
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line | From branch_cdc_f02b18c91ef1_260114164129928[/blue]
+[yellow]Sync NOOP | branch_cdc_f02b18c91ef1_260114164434702[/yellow]
+Sync duration=8.855s status=NOOP
+------------------------------------------------------------------------
+Sync duration=3.351s status=FAILED
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+[green]FULL VERIFY PASSED[/green] upstream rows=5100121 hash=3698074749 snapshot=branch_cdc_f02b18c91ef1_260114164129928
+Verify duration=7.456s mode=FULL snapshot=branch_cdc_f02b18c91ef1_260114164129928
+[green]FULL VERIFY PASSED[/green] upstream rows=5100121 hash=3698074749 snapshot=LATEST
+Verify duration=1.904/6.921/9.341s mode=FULL snapshot=LATEST
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_order_line_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_order_line | From branch_cdc_f02b18c91ef1_260114164129928[/blue]
+[yellow]Sync NOOP | branch_cdc_f02b18c91ef1_260114164816911[/yellow]
+Sync duration=0.784/0.130/9.844s status=NOOP
+------------------------------------------------------------------------
