@@ -541,6 +541,8 @@ def sync_loop(config, interval):
                     ds_conn.close()
                 ds_conn = None
                 time.sleep(2)
+    except KeyboardInterrupt:
+        log.info("Auto mode interrupted by user.")
     finally:
         if keeper and keeper.is_alive():
             keeper.stop(); keeper.join()
@@ -640,4 +642,7 @@ def setup_config(existing=None):
         if c == "Discard" or c is None: return existing
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        log.info("Interrupted by user.")
