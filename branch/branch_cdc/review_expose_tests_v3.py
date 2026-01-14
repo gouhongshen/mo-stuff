@@ -11,6 +11,7 @@ from branch_cdc import (
     ensure_meta_table,
     META_DB,
     META_TABLE,
+    META_LOCK_TABLE,
     INSTANCE_ID,
 )
 
@@ -119,18 +120,18 @@ def test_lockkeeper_heartbeat_advances_lock_time():
     if not ds.connect(db_override=""):
         raise RuntimeError("Downstream connect failed for heartbeat test.")
     ensure_meta_table(ds)
-    ds.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,))
+    ds.execute(f"DELETE FROM `{META_DB}`.`{META_LOCK_TABLE}` WHERE task_id=%s", (tid,))
     ds.execute(
-        f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, lock_owner, lock_time) VALUES (%s, %s, NOW())",
+        f"INSERT INTO `{META_DB}`.`{META_LOCK_TABLE}` (task_id, lock_owner, lock_time) VALUES (%s, %s, NOW())",
         (tid, INSTANCE_ID),
     )
     ds.commit()
-    before = ds.fetch_one(f"SELECT lock_time FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,))["lock_time"]
+    before = ds.fetch_one(f"SELECT lock_time FROM `{META_DB}`.`{META_LOCK_TABLE}` WHERE task_id=%s", (tid,))["lock_time"]
 
     keeper = LockKeeper(ds_cfg, tid)
     keeper.start()
     time.sleep(12)
-    after = ds.fetch_one(f"SELECT lock_time FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,))["lock_time"]
+    after = ds.fetch_one(f"SELECT lock_time FROM `{META_DB}`.`{META_LOCK_TABLE}` WHERE task_id=%s", (tid,))["lock_time"]
     keeper.stop()
     keeper.join()
     ds.close()

@@ -2,7 +2,7 @@
 import os, sys, time, subprocess, signal, random, pymysql, threading
 from rich.console import Console
 from rich.panel import Panel
-from branch_cdc import save_config, DBConnection, verify_consistency, load_config, META_DB, META_TABLE, INSTANCE_ID
+from branch_cdc import save_config, DBConnection, verify_consistency, load_config, META_DB, META_LOCK_TABLE, INSTANCE_ID
 
 console = Console()
 TEST_UP_DB, DS_DB, TEST_TABLE, TEST_STAGE = "cdc_stress_up", "cdc_stress_ds", "stress_tbl", "s1"
@@ -35,7 +35,7 @@ def concurrent_stealer(tid, stop_event):
     while not stop_event.is_set():
         # Review Fix: Simulation of an aggressive second instance
         # It should FAIL to steal because of the heartbeat (lock_time is always fresh)
-        sql = f"UPDATE `{META_DB}`.`{META_TABLE}` SET lock_owner='STEALER', lock_time=NOW() WHERE task_id='{tid}' AND (lock_owner IS NULL OR lock_time < NOW() - INTERVAL 30 SECOND)"
+        sql = f"UPDATE `{META_DB}`.`{META_LOCK_TABLE}` SET lock_owner='STEALER', lock_time=NOW() WHERE task_id='{tid}' AND (lock_owner IS NULL OR lock_time < NOW() - INTERVAL 30 SECOND)"
         with conn.cursor() as cur:
             cur.execute(sql)
             if cur.rowcount > 0:

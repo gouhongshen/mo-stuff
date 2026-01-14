@@ -16,14 +16,15 @@ os.makedirs(BASE_DIR, exist_ok=True)
 
 parser = argparse.ArgumentParser(description="MatrixOne CDC Tool v4.1")
 parser.add_argument("--log-file", default=os.path.join(BASE_DIR, "cdc_sync.log"))
+parser.add_argument("--config", default=os.path.join(BASE_DIR, "config.json"))
 parser.add_argument("--mode", choices=["manual", "auto"])
 parser.add_argument("--interval", type=int)
 parser.add_argument("--verify-interval", type=int)
 parser.add_argument("--once", action="store_true")
 cli_args, _ = parser.parse_known_args()
 
-CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
-META_DB, META_TABLE = "cdc_by_data_branch_db", "meta"
+CONFIG_FILE = os.path.abspath(cli_args.config)
+META_DB, META_TABLE, META_LOCK_TABLE = "cdc_by_data_branch_db", "meta", "meta_lock"
 MAX_WATERMARKS, LOCK_TIMEOUT_SEC = 4, 30
 INSTANCE_ID = f"{socket.gethostname()}_{os.getpid()}_{uuid.uuid4().hex[:6]}"
 
@@ -32,7 +33,9 @@ logging.basicConfig(level="INFO", format="%(message)s", handlers=[RichHandler(co
 log = logging.getLogger("rich")
 
 class DBConnection:
-    def __init__(self, config, name): self.config, self.name, self.conn = config, name, None
+    def __init__(self, config, name, autocommit=False):
+        self.config, self.name, self.conn = config, name, None
+        self.autocommit = autocommit
     def connect(self, db_override=None):
         try:
             db_to_use = db_override if db_override is not None else self.config.get("db")
@@ -40,7 +43,7 @@ class DBConnection:
                 host=self.config["host"], port=int(self.config["port"]),
                 user=self.config["user"], password=self.config["password"],
                 database=db_to_use, charset='utf8mb4',
-                cursorclass=pymysql.cursors.DictCursor, local_infile=True, autocommit=False
+                cursorclass=pymysql.cursors.DictCursor, local_infile=True, autocommit=self.autocommit
             )
             self.conn.commit(); return True
         except pymysql.err.OperationalError as e:
@@ -62,11 +65,13 @@ class DBConnection:
     def fetch_one(self, sql, args=None):
         res = self.query(sql, args); return res[0] if res else None
 
-def load_config():
-    if not os.path.exists(CONFIG_FILE): return {}
-    with open(CONFIG_FILE, "r") as f: return json.load(f)
-def save_config(config):
-    with open(CONFIG_FILE, "w") as f: json.dump(config, f, indent=4)
+def load_config(path=None):
+    cfg_path = path or CONFIG_FILE
+    if not os.path.exists(cfg_path): return {}
+    with open(cfg_path, "r") as f: return json.load(f)
+def save_config(config, path=None):
+    cfg_path = path or CONFIG_FILE
+    with open(cfg_path, "w") as f: json.dump(config, f, indent=4)
 def get_task_id(config):
     u, d = config["upstream"], config["downstream"]
     return f"{u['host']}_{u['port']}_{u['db']}_{u['table']}_to_{d['db']}_{d['table']}".replace(".", "_")
@@ -74,13 +79,17 @@ def get_task_id(config):
 def ensure_meta_table(ds_conn):
     ds_conn.execute(f"CREATE DATABASE IF NOT EXISTS `{META_DB}`"); ds_conn.commit()
     ds_conn.execute(f"CREATE TABLE IF NOT EXISTS `{META_DB}`.`{META_TABLE}` (task_id VARCHAR(255), watermark VARCHAR(255), lock_owner VARCHAR(255), lock_time TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"); ds_conn.commit()
+    ds_conn.execute(f"CREATE TABLE IF NOT EXISTS `{META_DB}`.`{META_LOCK_TABLE}` (task_id VARCHAR(255) PRIMARY KEY, lock_owner VARCHAR(255), lock_time TIMESTAMP)"); ds_conn.commit()
 
 def acquire_lock(ds_conn, tid):
-    if not ds_conn.query(f"SELECT 1 FROM `{META_DB}`.`{META_TABLE}` WHERE task_id = %s", (tid,)):
-        ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id) VALUES (%s)", (tid,)); ds_conn.commit()
-    sql = f"UPDATE `{META_DB}`.`{META_TABLE}` SET lock_owner=%s, lock_time=NOW() WHERE task_id=%s AND (lock_owner IS NULL OR lock_owner=%s OR lock_time < NOW() - INTERVAL {LOCK_TIMEOUT_SEC} SECOND)"
+    if not ds_conn.fetch_one(f"SELECT 1 FROM `{META_DB}`.`{META_LOCK_TABLE}` WHERE task_id=%s", (tid,)):
+        try:
+            ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_LOCK_TABLE}` (task_id) VALUES (%s)", (tid,)); ds_conn.commit()
+        except pymysql.err.IntegrityError:
+            pass
+    sql = f"UPDATE `{META_DB}`.`{META_LOCK_TABLE}` SET lock_owner=%s, lock_time=NOW() WHERE task_id=%s AND (lock_owner IS NULL OR lock_owner=%s OR lock_time < NOW() - INTERVAL {LOCK_TIMEOUT_SEC} SECOND)"
     ds_conn.execute(sql, (INSTANCE_ID, tid, INSTANCE_ID)); ds_conn.commit()
-    r = ds_conn.fetch_one(f"SELECT lock_owner FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,))
+    r = ds_conn.fetch_one(f"SELECT lock_owner FROM `{META_DB}`.`{META_LOCK_TABLE}` WHERE task_id=%s", (tid,))
     return r and r['lock_owner'] == INSTANCE_ID
 
 class LockKeeper(threading.Thread):
@@ -88,23 +97,133 @@ class LockKeeper(threading.Thread):
         super().__init__()
         self.ds_config, self.tid, self.stop_event = ds_config, tid, threading.Event()
     def run(self):
-        conn = DBConnection(self.ds_config, "LockKeeper")
+        conn = DBConnection(self.ds_config, "LockKeeper", autocommit=True)
         if not conn.connect(db_override=""): return
         while not self.stop_event.wait(10):
             try:
-                conn.execute(f"UPDATE `{META_DB}`.`{META_TABLE}` SET lock_time=NOW() WHERE task_id=%s AND lock_owner=%s", (self.tid, INSTANCE_ID)); conn.commit()
-            except: pass
+                conn.execute(f"UPDATE `{META_DB}`.`{META_LOCK_TABLE}` SET lock_time=NOW() WHERE task_id=%s AND lock_owner=%s", (self.tid, INSTANCE_ID)); conn.commit()
+            except:
+                conn.close()
+                time.sleep(1)
+                conn.connect(db_override="")
         conn.close()
     def stop(self): self.stop_event.set()
 
 def release_lock(ds_conn, tid):
     try:
-        ds_conn.execute(f"UPDATE `{META_DB}`.`{META_TABLE}` SET lock_owner=NULL WHERE task_id=%s AND lock_owner=%s", (tid, INSTANCE_ID)); ds_conn.commit()
+        ds_conn.execute(f"UPDATE `{META_DB}`.`{META_LOCK_TABLE}` SET lock_owner=NULL, lock_time=NULL WHERE task_id=%s AND lock_owner=%s", (tid, INSTANCE_ID)); ds_conn.commit()
     except: pass
 
 def get_watermarks(ds_conn, tid):
     try: return [r['watermark'] for r in ds_conn.query(f"SELECT watermark FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s AND watermark IS NOT NULL ORDER BY created_at DESC", (tid,))]
     except: return []
+
+def lock_is_held(ds_conn, tid):
+    try:
+        r = ds_conn.fetch_one(f"SELECT lock_owner FROM `{META_DB}`.`{META_LOCK_TABLE}` WHERE task_id=%s", (tid,))
+        return r and r['lock_owner'] == INSTANCE_ID
+    except:
+        return False
+
+def get_stage_config(config):
+    stage = config.get("stage") or {}
+    name, url = stage.get("name"), stage.get("url")
+    if not name and url:
+        name = f"cdc_stage_{hashlib.md5(url.encode()).hexdigest()[:8]}"
+    return name, url
+
+def ensure_stage(up_conn, stage_name, stage_url):
+    if not stage_name:
+        return False
+    if stage_url:
+        safe_url = stage_url.replace("'", "''")
+        up_conn.execute(f"CREATE STAGE IF NOT EXISTS `{stage_name}` URL='{safe_url}'"); up_conn.commit()
+    return True
+
+def get_diff_file_path(row):
+    if not row:
+        return None
+    for key in ("FILE SAVED TO", "file saved to"):
+        if key in row:
+            return row[key]
+    return next(iter(row.values()))
+
+def split_sql_statements(sql_text):
+    stmts, buf = [], []
+    in_single = in_double = in_backtick = False
+    in_line_comment = in_block_comment = False
+    i, n = 0, len(sql_text)
+    while i < n:
+        ch = sql_text[i]
+        nxt = sql_text[i + 1] if i + 1 < n else ""
+        if in_line_comment:
+            buf.append(ch)
+            if ch == "\n":
+                in_line_comment = False
+            i += 1
+            continue
+        if in_block_comment:
+            buf.append(ch)
+            if ch == "*" and nxt == "/":
+                buf.append(nxt)
+                i += 2
+                in_block_comment = False
+                continue
+            i += 1
+            continue
+        if in_single:
+            buf.append(ch)
+            if ch == "\\" and nxt:
+                buf.append(nxt); i += 2; continue
+            if ch == "'":
+                if nxt == "'":
+                    buf.append(nxt); i += 2; continue
+                in_single = False
+            i += 1
+            continue
+        if in_double:
+            buf.append(ch)
+            if ch == "\\" and nxt:
+                buf.append(nxt); i += 2; continue
+            if ch == "\"":
+                if nxt == "\"":
+                    buf.append(nxt); i += 2; continue
+                in_double = False
+            i += 1
+            continue
+        if in_backtick:
+            buf.append(ch)
+            if ch == "`":
+                if nxt == "`":
+                    buf.append(nxt); i += 2; continue
+                in_backtick = False
+            i += 1
+            continue
+        if ch == "-" and nxt == "-":
+            in_line_comment = True
+            buf.append(ch); buf.append(nxt); i += 2; continue
+        if ch == "/" and nxt == "*":
+            in_block_comment = True
+            buf.append(ch); buf.append(nxt); i += 2; continue
+        if ch == "'":
+            in_single = True; buf.append(ch); i += 1; continue
+        if ch == "\"":
+            in_double = True; buf.append(ch); i += 1; continue
+        if ch == "`":
+            in_backtick = True; buf.append(ch); i += 1; continue
+        if ch == ";":
+            stmt = "".join(buf).strip()
+            if stmt:
+                stmts.append(stmt)
+            buf = []
+            i += 1
+            continue
+        buf.append(ch)
+        i += 1
+    tail = "".join(buf).strip()
+    if tail:
+        stmts.append(tail)
+    return stmts
 
 def get_check_sql(conn, db, table, snap=None, sample=False):
     sc = f"{{snapshot = '{snap}'}}" if snap else ""
@@ -148,18 +267,25 @@ def archeology_recovery(up_conn, ds_conn, config, tid):
                 ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, snap)); ds_conn.commit(); return snap
     return None
 
-def perform_sync(config, is_auto=False):
+def perform_sync(config, is_auto=False, lock_held=False):
     u_cfg, d_cfg = config["upstream"], config["downstream"]
     tid = get_task_id(config)
-    up_conn, ds_conn = DBConnection(u_cfg, "Up"), DBConnection(d_cfg, "Ds")
+    up_conn, ds_conn = DBConnection(u_cfg, "Up", autocommit=True), DBConnection(d_cfg, "Ds")
     if not up_conn.connect() or not ds_conn.connect(db_override=""): return False
     
     keeper = LockKeeper(d_cfg, tid)
+    dfiles = []
+    snapshot_created = False
     try:
         ds_conn.execute(f"CREATE DATABASE IF NOT EXISTS `{d_cfg['db']}`"); ds_conn.commit()
         ensure_meta_table(ds_conn)
-        if not acquire_lock(ds_conn, tid): return False
-        keeper.start()
+        if lock_held:
+            if not lock_is_held(ds_conn, tid):
+                log.warning("Lock lost before sync, skipping this cycle.")
+                return False
+        else:
+            if not acquire_lock(ds_conn, tid): return False
+            keeper.start()
         
         ds_conn.execute(f"USE `{d_cfg['db']}`"); ds_conn.commit()
         target_exists = ds_conn.query(f"SHOW TABLES LIKE '{d_cfg['table']}'")
@@ -177,6 +303,18 @@ def perform_sync(config, is_auto=False):
             log.warning(f"Snapshot {lastgood} lost. Resetting to FULL sync.")
             ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,)); ds_conn.commit()
             lastgood = None
+        if lastgood and not verify_consistency(up_conn, ds_conn, config, lastgood, sample=True):
+            log.warning("Watermark inconsistent with downstream; resetting to FULL sync.")
+            ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,)); ds_conn.commit()
+            lastgood = None
+
+        stage_name, stage_url = get_stage_config(config)
+        if not stage_name:
+            log.error("Stage name is missing; check config.stage.name or config.stage.url.")
+            return False
+        if not ensure_stage(up_conn, stage_name, stage_url):
+            log.error("Stage setup failed; aborting sync.")
+            return False
 
         newsnap = generate_snapshot_name(tid)
         sync_success = False
@@ -186,15 +324,16 @@ def perform_sync(config, is_auto=False):
                 t_zero = f"{u_cfg['table']}_zero"
                 up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_zero}`"); up_conn.commit()
                 up_conn.execute(f"CREATE TABLE `{u_cfg['db']}`.`{t_zero}` LIKE `{u_cfg['db']}`.`{u_cfg['table']}`"); up_conn.commit()
-                up_conn.execute(f"CREATE SNAPSHOT `{newsnap}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}`"); up_conn.commit()
-                try: dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{newsnap}'}} against `{u_cfg['db']}`.`{t_zero}` output file 'stage://{config['stage']['name']}'")
+                up_conn.execute(f"CREATE SNAPSHOT `{newsnap}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}`"); up_conn.commit(); snapshot_created = True
+                try: dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{newsnap}'}} against `{u_cfg['db']}`.`{t_zero}` output file 'stage://{stage_name}'")
                 finally: up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_zero}`"); up_conn.commit()
                 
                 ds_conn.conn.begin()
                 try:
                     ds_conn.execute(f"TRUNCATE TABLE `{d_cfg['db']}`.`{d_cfg['table']}`")
                     for r in dfiles:
-                        f, sl, qt = list(r.values())[0], chr(92), chr(34)
+                        f, sl, qt = get_diff_file_path(r), chr(92), chr(34)
+                        if not f: continue
                         ds_conn.execute(f"LOAD DATA INFILE '{f}' INTO TABLE `{d_cfg['db']}`.`{d_cfg['table']}` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '{qt}' ESCAPED BY '{sl}{sl}' LINES TERMINATED BY '{sl}n' PARALLEL 'TRUE'")
                     ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, newsnap)); ds_conn.commit(); sync_success = True
                 except Exception as e: ds_conn.rollback(); raise e
@@ -203,21 +342,22 @@ def perform_sync(config, is_auto=False):
                 t_cp = f"{u_cfg['table']}_copy_prev"
                 up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cp}`"); up_conn.commit()
                 up_conn.execute(f"data branch create table `{u_cfg['db']}`.`{t_cp}` from `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{lastgood}'}}"); up_conn.commit()
-                up_conn.execute(f"CREATE SNAPSHOT `{newsnap}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}`"); up_conn.commit()
-                try: dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot = '{newsnap}'}} against `{u_cfg['db']}`.`{t_cp}` output file 'stage://{config['stage']['name']}'")
+                up_conn.execute(f"CREATE SNAPSHOT `{newsnap}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}`"); up_conn.commit(); snapshot_created = True
+                try: dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot = '{newsnap}'}} against `{u_cfg['db']}`.`{t_cp}` output file 'stage://{stage_name}'")
                 finally: up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cp}`"); up_conn.commit()
                 
                 ds_conn.conn.begin()
                 try:
                     for r in dfiles:
-                        raw = up_conn.fetch_one(f"select load_file(cast('{list(r.values())[0]}' as datalink)) as c")['c']
+                        f = get_diff_file_path(r)
+                        if not f: continue
+                        raw = up_conn.fetch_one("select load_file(cast(%s as datalink)) as c", (f,))['c']
+                        if raw is None: continue
                         stmt_str = raw.decode('utf-8') if isinstance(raw, bytes) else raw
-                        stmt_str = re.sub(r"^\s*(BEGIN|COMMIT|ROLLBACK|START\s+TRANSACTION)\s*;?\s*", "", stmt_str, flags=re.I|re.M)
-                        stmt_str = re.sub(r";\s*(COMMIT|ROLLBACK|END)\s*;?\s*$", ";", stmt_str, flags=re.I|re.M)
                         target = f"`{d_cfg['db']}`.`{d_cfg['table']}`"
                         sql = re.compile(r'(delete\s+from\s+|replace\s+into\s+|insert\s+into\s+|update\s+)(/\*.*?\*/\s+)?([`\w]+\.[`\w]+|[`\w]+)', re.I|re.S).sub(lambda m: f"{m.group(1)}{m.group(2) or ''} {target} ", stmt_str)
-                        for s in [st.strip() for st in sql.split(';') if st.strip()]:
-                            if not s or s.upper().startswith(("BEGIN", "COMMIT", "ROLLBACK")): continue
+                        for s in split_sql_statements(sql):
+                            if re.match(r"^(BEGIN|COMMIT|ROLLBACK|START\s+TRANSACTION)\b", s, re.I): continue
                             ds_conn.execute(s)
                     ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, newsnap)); ds_conn.commit(); sync_success = True
                 except Exception as e: ds_conn.rollback(); raise e
@@ -225,7 +365,9 @@ def perform_sync(config, is_auto=False):
         if sync_success:
             log.info(f"[green]Sync SUCCESS | {newsnap}[/green]")
             for r in dfiles:
-                try: up_conn.execute(f"REMOVE '{list(r.values())[0]}'"); up_conn.commit()
+                try:
+                    f = get_diff_file_path(r)
+                    if f: up_conn.execute(f"REMOVE '{f}'"); up_conn.commit()
                 except: pass
             allw = get_watermarks(ds_conn, tid)
             if len(allw) > MAX_WATERMARKS:
@@ -236,25 +378,65 @@ def perform_sync(config, is_auto=False):
             return True
         return False
     except Exception as e:
-        log.error(f"Sync FAILED: {e}"); return False
+        log.error(f"Sync FAILED: {e}")
+        if snapshot_created:
+            try: up_conn.execute(f"DROP SNAPSHOT IF EXISTS `{newsnap}`"); up_conn.commit()
+            except: pass
+        return False
     finally:
         if keeper.is_alive(): # Review Fix: Only join if started
             keeper.stop(); keeper.join()
-        release_lock(ds_conn, tid); up_conn.close(); ds_conn.close()
+        if not lock_held:
+            release_lock(ds_conn, tid)
+        up_conn.close(); ds_conn.close()
 
 def sync_loop(config, interval):
     sc = 0
-    while True:
-        v_int = config.get("verify_interval", 50)
-        if perform_sync(config, is_auto=True):
-            sc += 1
-            if sc % 5 == 0 or (v_int > 0 and sc % v_int == 0):
-                up, ds = DBConnection(config["upstream"], "Up"), DBConnection(config["downstream"], "Ds")
-                if up.connect() and ds.connect():
-                    ws = get_watermarks(ds, get_task_id(config))
-                    if ws: verify_consistency(up, ds, config, ws[0], sample=not (v_int > 0 and sc % v_int == 0))
-                    up.close(); ds.close()
-        time.sleep(interval)
+    tid = get_task_id(config)
+    ds_conn = None
+    keeper = None
+    try:
+        while True:
+            v_int = config.get("verify_interval", 50)
+            try:
+                if ds_conn is None:
+                    ds_conn = DBConnection(config["downstream"], "Ds", autocommit=True)
+                    if not ds_conn.connect(db_override=""):
+                        log.error("Downstream connection failed; retrying...")
+                        time.sleep(2); continue
+                    ensure_meta_table(ds_conn)
+                if not acquire_lock(ds_conn, tid):
+                    time.sleep(interval); continue
+                if keeper is None or not keeper.is_alive():
+                    keeper = LockKeeper(config["downstream"], tid)
+                    keeper.start()
+                if perform_sync(config, is_auto=True, lock_held=True):
+                    sc += 1
+                    if sc % 5 == 0 or (v_int > 0 and sc % v_int == 0):
+                        up, ds = DBConnection(config["upstream"], "Up", autocommit=True), DBConnection(config["downstream"], "Ds", autocommit=True)
+                        if up.connect() and ds.connect():
+                            ws = get_watermarks(ds, get_task_id(config))
+                            if ws:
+                                ok = verify_consistency(up, ds, config, ws[0], sample=not (v_int > 0 and sc % v_int == 0))
+                                if not ok:
+                                    log.warning("Consistency check FAILED; please investigate.")
+                            up.close(); ds.close()
+                time.sleep(interval)
+            except Exception as e:
+                log.warning(f"Auto loop error: {e}. Reconnecting...")
+                if keeper and keeper.is_alive():
+                    keeper.stop(); keeper.join()
+                keeper = None
+                if ds_conn:
+                    ds_conn.close()
+                ds_conn = None
+                time.sleep(2)
+    finally:
+        if keeper and keeper.is_alive():
+            keeper.stop(); keeper.join()
+        if ds_conn:
+            release_lock(ds_conn, tid)
+            ds_conn.close()
 
 def main():
     console.print(Panel.fit("MatrixOne branch_cdc v4.1", style="bold magenta"))
@@ -267,7 +449,7 @@ def main():
         if c == "Exit": sys.exit(0)
         elif c == "Edit Configuration": config = setup_config(config)
         elif c == "Verify Consistency":
-            up, ds = DBConnection(config["upstream"], "Up"), DBConnection(config["downstream"], "Ds")
+            up, ds = DBConnection(config["upstream"], "Up", autocommit=True), DBConnection(config["downstream"], "Ds", autocommit=True)
             if up.connect() and ds.connect():
                 tid = get_task_id(config); ensure_meta_table(ds); ws = get_watermarks(ds, tid)
                 if ws: verify_consistency(up, ds, config, ws[0])

@@ -8,7 +8,7 @@ from branch_cdc import (
     get_task_id,
     ensure_meta_table,
     META_DB,
-    META_TABLE,
+    META_LOCK_TABLE,
 )
 
 HOST = "127.0.0.1"
@@ -72,9 +72,9 @@ def test_lock_contention_should_not_crash():
         raise RuntimeError("Downstream connect failed for lock contention test.")
     ensure_meta_table(ds)
     # Pre-create a lock owned by another instance so acquire_lock should fail.
-    ds.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,))
+    ds.execute(f"DELETE FROM `{META_DB}`.`{META_LOCK_TABLE}` WHERE task_id=%s", (tid,))
     ds.execute(
-        f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, lock_owner, lock_time) VALUES (%s, %s, NOW())",
+        f"INSERT INTO `{META_DB}`.`{META_LOCK_TABLE}` (task_id, lock_owner, lock_time) VALUES (%s, %s, NOW())",
         (tid, "OTHER_INSTANCE"),
     )
     ds.commit()
