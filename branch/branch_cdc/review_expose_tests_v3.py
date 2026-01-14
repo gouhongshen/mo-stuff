@@ -106,7 +106,7 @@ def test_snapshot_missing_fallback_full():
     tid = get_task_id(cfg)
     ws = ds.query(f"SELECT watermark FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s ORDER BY created_at DESC", (tid,))
     snap = ws[0]["watermark"] if ws else None
-    assert verify_consistency(up, ds, cfg, snap), "Data mismatch after missing snapshot fallback."
+    assert verify_consistency(up, ds, cfg, snap, mode="full"), "Data mismatch after missing snapshot fallback."
     up.close()
     ds.close()
 

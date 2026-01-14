@@ -65,7 +65,7 @@ def test_crash_and_recovery():
         d_cnt = ds.fetch_one(f"SELECT count(*) as c FROM {ds_db}.crash_tbl")['c']
         print(f"DEBUG: Upstream Count: {u_cnt}, Downstream Count: {d_cnt}")
         
-        if verify_consistency(up, ds, cfg):
+        if verify_consistency(up, ds, cfg, mode="full"):
             print("[PASS] Consistency reached after crash recovery.")
         else:
             print("[FAIL] Consistency NOT reached!")

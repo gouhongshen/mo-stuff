@@ -155,7 +155,7 @@ def test_fast_check_without_pk():
     ds = DBConnection(cfg["downstream"], "Ds")
     up.connect()
     ds.connect()
-    ok = verify_consistency(up, ds, cfg, sample=True)
+    ok = verify_consistency(up, ds, cfg, mode="fast")
     up.close()
     ds.close()
     assert ok, "Expected fast check to work without PK, but it failed."

@@ -31,8 +31,6 @@ SNAPSHOT_PREFIX = "branch_cdc_"
 MAX_WATERMARKS, LOCK_TIMEOUT_SEC = 4, 30
 FULL_VERIFY_MAX_BYTES = 1024 * 1024 * 1024
 FULL_VERIFY_MAX_ROWS = 100000
-FAST_VERIFY_BUCKET = 7
-FAST_VERIFY_MOD = 100
 INSTANCE_ID = f"{socket.gethostname()}_{os.getpid()}_{uuid.uuid4().hex[:6]}"
 
 console = Console()
@@ -189,6 +187,16 @@ def lock_is_held(ds_conn, tid):
     except:
         return False
 
+def record_timing(timings, name, start_ts):
+    timings.append((name, time.time() - start_ts))
+
+def summarize_top_timings(timings, topn=3):
+    totals = {}
+    for name, dur in timings:
+        totals[name] = totals.get(name, 0.0) + dur
+    top = sorted(totals.items(), key=lambda x: x[1], reverse=True)[:topn]
+    return ", ".join([f"{n}:{d:.3f}s" for n, d in top])
+
 def get_stage_config(config):
     stage = config.get("stage") or {}
     name, url = stage.get("name"), stage.get("url")
@@ -293,16 +301,12 @@ def get_table_columns(conn, db, table):
     try: return conn.query(f"SHOW COLUMNS FROM `{db}`.`{table}`")
     except: return None
 
-def build_check_sql(db, table, cols, snap=None, sample=False):
-    if not cols:
-        return None
+def build_check_sql(db, table, cols, snap=None):
     sc = f"{{snapshot = '{snap}'}}" if snap else ""
-    pk_col = next((c['Field'] for c in cols if c['Key'] == 'PRI'), None)
-    if sample and not pk_col:
-        return None
+    if not cols:
+        return f"SELECT COUNT(*) as c, NULL as h FROM `{db}`.`{table}`{sc}"
     p_cols = [f"IFNULL(HEX(`{c['Field']}`), 'NULL')" if "vec" in c['Type'].lower() else f"IFNULL(CAST(`{c['Field']}` AS VARCHAR), 'NULL')" for c in cols]
-    where = f" WHERE ABS(CRC32(CAST(`{pk_col}` AS VARCHAR))) % {FAST_VERIFY_MOD} = {FAST_VERIFY_BUCKET}" if sample else ""
-    return f"SELECT COUNT(*) as c, BIT_XOR(CRC32(CONCAT_WS(',', {', '.join(p_cols)}))) as h FROM `{db}`.`{table}`{sc}{where}"
+    return f"SELECT COUNT(*) as c, BIT_XOR(CRC32(CONCAT_WS(',', {', '.join(p_cols)}))) as h FROM `{db}`.`{table}`{sc}"
 
 def get_table_size_bytes(conn, db, table):
     try:
@@ -324,41 +328,79 @@ def get_table_count(conn, db, table, snap=None):
         return None
     return res["c"] if res else None
 
-def decide_verify_sample(up_conn, u_cols, ds_cols, config, snap, requested_sample):
-    if not requested_sample:
-        return False
-    u_pk = any(c.get("Key") == "PRI" for c in u_cols)
-    d_pk = any(c.get("Key") == "PRI" for c in ds_cols)
-    if not (u_pk and d_pk):
-        return False
+def normalize_verify_columns(config):
+    cols = config.get("verify_columns")
+    if cols is None:
+        cols = (config.get("verify") or {}).get("columns")
+    if not cols:
+        return []
+    if isinstance(cols, str):
+        return [c.strip() for c in cols.split(",") if c.strip()]
+    if isinstance(cols, list):
+        return [str(c).strip() for c in cols if str(c).strip()]
+    return []
+
+def resolve_fast_check_columns(u_cols, d_cols, config):
+    u_map = {c["Field"]: c for c in u_cols}
+    d_map = {c["Field"]: c for c in d_cols}
+    req = [c for c in normalize_verify_columns(config) if c in u_map and c in d_map]
+    u_pks = [c['Field'] for c in u_cols if c.get('Key') == 'PRI']
+    d_pks = [c['Field'] for c in d_cols if c.get('Key') == 'PRI']
+    pk_cols = [c for c in u_pks if c in d_pks]
+    use_cpkey = False
+    if len(pk_cols) > 1 and "__mo_cpkey_col" in u_map and "__mo_cpkey_col" in d_map:
+        pk_cols = ["__mo_cpkey_col"]
+        use_cpkey = True
+    cols = []
+    if pk_cols and req:
+        cols = pk_cols + [c for c in req if c not in pk_cols]
+        detail = "pk+cols_cpkey" if use_cpkey else "pk+cols"
+    elif pk_cols:
+        cols = pk_cols
+        detail = "pk_cpkey" if use_cpkey else "pk"
+    elif req:
+        cols = req
+        detail = "cols"
+    else:
+        detail = "count"
+    u_sel = [u_map[c] for c in cols] if cols else []
+    d_sel = [d_map[c] for c in cols] if cols else []
+    return u_sel, d_sel, detail
+
+def is_small_table(up_conn, config, snap=None):
     size_bytes = get_table_size_bytes(up_conn, config["upstream"]["db"], config["upstream"]["table"])
     if size_bytes is not None and size_bytes > 0:
-        return size_bytes >= FULL_VERIFY_MAX_BYTES
+        return size_bytes < FULL_VERIFY_MAX_BYTES
     row_count = get_table_count(up_conn, config["upstream"]["db"], config["upstream"]["table"], snap=snap)
-    if row_count is not None and row_count < FULL_VERIFY_MAX_ROWS:
-        return False
-    return True
+    if row_count is not None:
+        return row_count < FULL_VERIFY_MAX_ROWS
+    return False
 
-def verify_consistency(up_conn, ds_conn, config, snap=None, sample=False, return_detail=False):
+def verify_consistency(up_conn, ds_conn, config, snap=None, mode="fast", return_detail=False):
     u, d = config["upstream"], config["downstream"]
     err = None
     u_time = None
     d_time = None
+    detail = None
     try:
         u_cols = get_table_columns(up_conn, u["db"], u["table"])
         d_cols = get_table_columns(ds_conn, d["db"], d["table"])
         if not u_cols or not d_cols:
             if return_detail:
                 err = "failed to load table columns"
-                return False, None, None, False, err, u_time, d_time
+                return False, None, None, detail, err, u_time, d_time
             return False
-        use_sample = decide_verify_sample(up_conn, u_cols, d_cols, config, snap, sample)
-        u_sql = build_check_sql(u["db"], u["table"], u_cols, snap, use_sample)
-        d_sql = build_check_sql(d["db"], d["table"], d_cols, None, use_sample)
+        if mode == "full":
+            u_sel, d_sel = u_cols, d_cols
+            detail = "all"
+        else:
+            u_sel, d_sel, detail = resolve_fast_check_columns(u_cols, d_cols, config)
+        u_sql = build_check_sql(u["db"], u["table"], u_sel, snap)
+        d_sql = build_check_sql(d["db"], d["table"], d_sel, None)
         if u_sql is None or d_sql is None:
             if return_detail:
                 err = "failed to build verify SQL"
-                return False, None, None, use_sample, err, u_time, d_time
+                return False, None, None, detail, err, u_time, d_time
             return False
         u_start = time.time()
         ur = up_conn.fetch_one(u_sql)
@@ -372,18 +414,20 @@ def verify_consistency(up_conn, ds_conn, config, snap=None, sample=False, return
         else:
             ok = ur['c'] == dr['c'] and (ur['h'] == dr['h'] or (ur['h'] is None and dr['h'] is None))
         if return_detail:
-            return ok, ur, dr, use_sample, err, u_time, d_time
+            return ok, ur, dr, detail, err, u_time, d_time
         return ok
     except Exception as e:
         err = str(e)
         if return_detail:
-            return False, None, None, False, err, u_time, d_time
+            return False, None, None, detail, err, u_time, d_time
         return False
 
 def verify_watermark_consistency(up_conn, ds_conn, config, snap, retries=3, wait_sec=5):
     for attempt in range(1, retries + 1):
-        ok, ur, dr, used_sample, err, _, _ = verify_consistency(up_conn, ds_conn, config, snap, sample=True, return_detail=True)
+        ok, ur, dr, detail, err, _, _ = verify_consistency(up_conn, ds_conn, config, snap, mode="fast", return_detail=True)
         if ok:
+            if detail:
+                log.info(f"FAST CHECK PASSED type={detail}")
             return True
         if err or ur is None or dr is None:
             msg = err or "verify returned empty result"
@@ -392,7 +436,7 @@ def verify_watermark_consistency(up_conn, ds_conn, config, snap, retries=3, wait
                 time.sleep(wait_sec)
                 continue
             return None
-        log_verify_result(False, ur, dr, sample=used_sample, snapshot_label=snap)
+        log_verify_result(False, ur, dr, mode="FAST", detail=detail, snapshot_label=snap)
         return False
     return None
 
@@ -401,17 +445,17 @@ def format_check_value(val):
         return "NULL"
     return str(val)
 
-def log_verify_result(ok, ur, dr, sample=False, snapshot_label=None):
-    mode = "FAST" if sample else "FULL"
+def log_verify_result(ok, ur, dr, mode="FAST", detail=None, snapshot_label=None):
     snap_info = f" snapshot={snapshot_label}" if snapshot_label else ""
+    detail_info = f" type={detail}" if detail and mode == "FAST" else ""
     if ok and ur:
-        log.info(f"[green]{mode} VERIFY PASSED[/green] upstream rows={ur['c']} hash={format_check_value(ur['h'])}{snap_info}")
+        log.info(f"[green]{mode} VERIFY PASSED[/green]{detail_info} upstream rows={ur['c']} hash={format_check_value(ur['h'])}{snap_info}")
         return
     u_cnt = ur['c'] if ur else "N/A"
     u_hash = format_check_value(ur['h']) if ur else "N/A"
     d_cnt = dr['c'] if dr else "N/A"
     d_hash = format_check_value(dr['h']) if dr else "N/A"
-    log.error(f"[red]{mode} VERIFY FAILED[/red] upstream rows={u_cnt} hash={u_hash} downstream rows={d_cnt} hash={d_hash}{snap_info}")
+    log.error(f"[red]{mode} VERIFY FAILED[/red]{detail_info} upstream rows={u_cnt} hash={u_hash} downstream rows={d_cnt} hash={d_hash}{snap_info}")
 
 def build_status_panel(config, last_sync=None, last_verify=None, last_error=None):
     up = config.get("upstream", {})
@@ -492,39 +536,46 @@ def archeology_recovery(up_conn, ds_conn, config, tid):
     except: return None
     for s in snaps:
         snap = s['sname']
-        ok, _, _, used_sample, _, _, _ = verify_consistency(up_conn, ds_conn, config, snap, sample=True, return_detail=True)
-        if ok:
-            if used_sample or verify_consistency(up_conn, ds_conn, config, snap, sample=False):
-                log.info("[green]FULL Check PASSED[/green]")
-                log.info(f"[green]Watermark RECOVERED: {snap}[/green]")
-                ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, snap)); ds_conn.commit(); return snap
+        ok, _, _, _, _, _, _ = verify_consistency(up_conn, ds_conn, config, snap, mode="fast", return_detail=True)
+        if ok and verify_consistency(up_conn, ds_conn, config, snap, mode="full"):
+            log.info("[green]FULL Check PASSED[/green]")
+            log.info(f"[green]Watermark RECOVERED: {snap}[/green]")
+            ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, snap)); ds_conn.commit(); return snap
     return None
 
-def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
+def perform_sync(config, is_auto=False, lock_held=False, force_full=False, return_detail=False):
     start_ts = time.time()
     diff_elapsed = 0.0
     apply_elapsed = 0.0
+    timings = []
     sync_success = False
     sync_status = "FAILED"
     sync_noop = False
+    sync_kind = "UNKNOWN"
     u_cfg, d_cfg = config["upstream"], config["downstream"]
     tid = get_task_id(config)
     up_conn, ds_conn = DBConnection(u_cfg, "Up", autocommit=True), DBConnection(d_cfg, "Ds")
     keeper = LockKeeper(d_cfg, tid)
     dfiles = []
     snapshot_created = False
+    def sync_return(ok):
+        if return_detail:
+            return ok, sync_kind, sync_status
+        return ok
+
     try:
+        precheck_start = time.time()
         if not up_conn.connect() or not ds_conn.connect(db_override=""):
             log.error("Sync FAILED: connection failed")
-            return False
+            return sync_return(False)
         ds_conn.execute(f"CREATE DATABASE IF NOT EXISTS `{d_cfg['db']}`"); ds_conn.commit()
         ensure_meta_table(ds_conn)
         if lock_held:
             if not lock_is_held(ds_conn, tid):
                 log.warning("Lock lost before sync, skipping this cycle.")
-                return False
+                return sync_return(False)
         else:
-            if not acquire_lock(ds_conn, tid): return False
+            if not acquire_lock(ds_conn, tid): return sync_return(False)
             keeper.start()
         
         ds_conn.execute(f"USE `{d_cfg['db']}`"); ds_conn.commit()
@@ -532,7 +583,9 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
         if not target_exists:
             ddl = up_conn.fetch_one(f"SHOW CREATE TABLE `{u_cfg['db']}`.`{u_cfg['table']}`")['Create Table'].replace(f"`{u_cfg['table']}`", f"`{d_cfg['table']}`", 1)
             ds_conn.execute(ddl); ds_conn.commit()
+        record_timing(timings, "precheck", precheck_start)
 
+        watermark_start = time.time()
         ws = get_watermarks(ds_conn, tid)
         lastgood = ws[0] if ws else None
         if force_full:
@@ -553,27 +606,37 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
                 lastgood = None
             elif check is None:
                 log.error("Watermark check failed after retries; skipping this sync.")
-                return False
+                return sync_return(False)
+        record_timing(timings, "watermark", watermark_start)
 
+        stage_start = time.time()
         stage_name, stage_url = get_stage_config(config)
         if not stage_name:
             log.error("Stage name is missing; check config.stage.name or config.stage.url.")
-            return False
+            return sync_return(False)
         if not ensure_stage(up_conn, stage_name, stage_url):
             log.error("Stage setup failed; aborting sync.")
-            return False
+            return sync_return(False)
+        record_timing(timings, "stage", stage_start)
 
+        sync_kind = "FULL" if not lastgood else "INCREMENTAL"
         newsnap = generate_snapshot_name(tid)
         with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as prg:
             if not lastgood:
                 log.info(f"[blue]FULL Sync | Task: {tid}[/blue]")
                 t_zero = f"{u_cfg['table']}_zero"
+                t_cn = f"{u_cfg['table']}_copy_now"
                 up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_zero}`"); up_conn.commit()
+                up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cn}`"); up_conn.commit()
                 up_conn.execute(f"CREATE TABLE `{u_cfg['db']}`.`{t_zero}` LIKE `{u_cfg['db']}`.`{u_cfg['table']}`"); up_conn.commit()
                 diff_start = time.time()
                 up_conn.execute(f"CREATE SNAPSHOT `{newsnap}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}`"); up_conn.commit(); snapshot_created = True
-                try: dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{newsnap}'}} against `{u_cfg['db']}`.`{t_zero}` output file 'stage://{stage_name}'")
-                finally: up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_zero}`"); up_conn.commit()
+                try:
+                    up_conn.execute(f"data branch create table `{u_cfg['db']}`.`{t_cn}` from `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{newsnap}'}}"); up_conn.commit()
+                    dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{t_cn}` against `{u_cfg['db']}`.`{t_zero}` output file 'stage://{stage_name}'")
+                finally:
+                    up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cn}`"); up_conn.commit()
+                    up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_zero}`"); up_conn.commit()
                 diff_elapsed += time.time() - diff_start
                 
                 apply_start = time.time()
@@ -592,12 +655,18 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
             else:
                 log.info(f"[blue]INCREMENTAL Sync | Task: {tid} | From {lastgood}[/blue]")
                 t_cp = f"{u_cfg['table']}_copy_prev"
+                t_cn = f"{u_cfg['table']}_copy_now"
                 up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cp}`"); up_conn.commit()
+                up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cn}`"); up_conn.commit()
                 up_conn.execute(f"data branch create table `{u_cfg['db']}`.`{t_cp}` from `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{lastgood}'}}"); up_conn.commit()
                 diff_start = time.time()
                 up_conn.execute(f"CREATE SNAPSHOT `{newsnap}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}`"); up_conn.commit(); snapshot_created = True
-                try: dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot = '{newsnap}'}} against `{u_cfg['db']}`.`{t_cp}` output file 'stage://{stage_name}'")
-                finally: up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cp}`"); up_conn.commit()
+                try:
+                    up_conn.execute(f"data branch create table `{u_cfg['db']}`.`{t_cn}` from `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{newsnap}'}}"); up_conn.commit()
+                    dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{t_cn}` against `{u_cfg['db']}`.`{t_cp}` output file 'stage://{stage_name}'")
+                finally:
+                    up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cn}`"); up_conn.commit()
+                    up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cp}`"); up_conn.commit()
                 diff_elapsed += time.time() - diff_start
                 
                 apply_start = time.time()
@@ -629,6 +698,7 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
         if sync_noop:
             sync_status = "NOOP"
             log.info(f"[yellow]Sync NOOP | {newsnap}[/yellow]")
+            cleanup_start = time.time()
             for r in dfiles:
                 try:
                     f = get_diff_file_path(r)
@@ -637,10 +707,12 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
             if snapshot_created:
                 try: up_conn.execute(f"DROP SNAPSHOT IF EXISTS `{newsnap}`"); up_conn.commit()
                 except: pass
-            return True
+            record_timing(timings, "cleanup", cleanup_start)
+            return sync_return(True)
         if sync_success:
             sync_status = "SUCCESS"
             log.info(f"[green]Sync SUCCESS | {newsnap}[/green]")
+            cleanup_start = time.time()
             for r in dfiles:
                 try:
                     f = get_diff_file_path(r)
@@ -652,17 +724,27 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
                     ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s AND watermark=%s", (tid, w)); ds_conn.commit()
                     try: up_conn.execute(f"DROP SNAPSHOT IF EXISTS `{w}`"); up_conn.commit()
                     except: pass
-            return True
-        return False
+            record_timing(timings, "cleanup", cleanup_start)
+            return sync_return(True)
+        return sync_return(False)
     except Exception as e:
         log.error(f"Sync FAILED: {e}")
         if snapshot_created:
+            cleanup_start = time.time()
             try: up_conn.execute(f"DROP SNAPSHOT IF EXISTS `{newsnap}`"); up_conn.commit()
             except: pass
-        return False
+            record_timing(timings, "cleanup", cleanup_start)
+        return sync_return(False)
     finally:
         elapsed = time.time() - start_ts
         log.info(f"Sync duration={diff_elapsed:.3f}/{apply_elapsed:.3f}/{elapsed:.3f}s status={sync_status}")
+        if diff_elapsed > 0:
+            timings.append(("diff", diff_elapsed))
+        if apply_elapsed > 0:
+            timings.append(("apply", apply_elapsed))
+        top3 = summarize_top_timings(timings)
+        if top3:
+            log.info(f"Sync timing top3={top3}")
         log.info("-" * 72)
         if keeper.is_alive(): # Review Fix: Only join if started
             keeper.stop(); keeper.join()
@@ -671,7 +753,8 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False):
         up_conn.close(); ds_conn.close()
 
 def sync_loop(config, interval):
-    sc = 0
+    inc_sc = 0
+    total_sc = 0
     tid = get_task_id(config)
     ds_conn = None
     keeper = None
@@ -680,7 +763,6 @@ def sync_loop(config, interval):
     last_error = None
     try:
         while True:
-            v_int = config.get("verify_interval", 50)
             try:
                 if ds_conn is None:
                     ds_conn = DBConnection(config["downstream"], "Ds", autocommit=True)
@@ -693,27 +775,39 @@ def sync_loop(config, interval):
                 if keeper is None or not keeper.is_alive():
                     keeper = LockKeeper(config["downstream"], tid)
                     keeper.start()
-                if perform_sync(config, is_auto=True, lock_held=True):
-                    sc += 1
+                ok, sync_kind, _ = perform_sync(config, is_auto=True, lock_held=True, return_detail=True)
+                if ok:
+                    total_sc += 1
                     last_sync = time.strftime("%Y-%m-%d %H:%M:%S")
-                    if sc % 5 == 0 or (v_int > 0 and sc % v_int == 0):
+                    if sync_kind == "INCREMENTAL":
+                        inc_sc += 1
+                    v_int = config.get("verify_interval", 0)
+                    force_full = v_int and total_sc % v_int == 0
+                    periodic_full = sync_kind == "INCREMENTAL" and inc_sc % 3 == 0
+                    if force_full or periodic_full:
                         up, ds = DBConnection(config["upstream"], "Up", autocommit=True), DBConnection(config["downstream"], "Ds", autocommit=True)
                         if up.connect() and ds.connect():
                             ws = get_watermarks(ds, get_task_id(config))
                             if ws:
-                                sample = not (v_int > 0 and sc % v_int == 0)
+                                if force_full:
+                                    log.info(f"Verify forced by interval={v_int}")
+                                elif not is_small_table(up, config, snap=ws[0]):
+                                    log.info("Skip verify check due to table is too big.")
+                                    up.close(); ds.close()
+                                    time.sleep(interval)
+                                    continue
                                 verify_start = time.time()
-                                ok, ur, dr, used_sample, _, u_time, d_time = verify_consistency(up, ds, config, ws[0], sample=sample, return_detail=True)
-                                log_verify_result(ok, ur, dr, sample=used_sample, snapshot_label=ws[0])
+                                ok, ur, dr, _, _, u_time, d_time = verify_consistency(up, ds, config, ws[0], mode="full", return_detail=True)
+                                log_verify_result(ok, ur, dr, mode="FULL", snapshot_label=ws[0])
                                 verify_elapsed = time.time() - verify_start
                                 u_dur = u_time or 0.0
                                 d_dur = d_time or 0.0
-                                log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode={'FAST' if used_sample else 'FULL'} snapshot={ws[0]}")
+                                log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode=FULL snapshot={ws[0]}")
                                 if not ok:
                                     log.warning("Consistency check FAILED; please investigate.")
                                 else:
                                     cleanup_snapshots_after_verify(up, ds, config, ws[0])
-                                last_verify = f"{time.strftime('%Y-%m-%d %H:%M:%S')} ({'FAST' if used_sample else 'FULL'})"
+                                last_verify = f"{time.strftime('%Y-%m-%d %H:%M:%S')} (FULL)"
                             up.close(); ds.close()
                 time.sleep(interval)
             except Exception as e:
@@ -770,21 +864,21 @@ def main():
                 snap_label = chosen
             def do_verify():
                 up, ds = DBConnection(config["upstream"], "Up", autocommit=True), DBConnection(config["downstream"], "Ds", autocommit=True)
-                ok, ur, dr, used_sample = False, None, None, False
+                ok, ur, dr, detail, u_time, d_time = False, None, None, None, None, None
                 if up.connect() and ds.connect():
-                    ok, ur, dr, used_sample, _, u_time, d_time = verify_consistency(up, ds, config, snap, return_detail=True)
+                    ok, ur, dr, detail, _, u_time, d_time = verify_consistency(up, ds, config, snap, mode="full", return_detail=True)
                     if ok:
                         cleanup_snapshots_after_verify(up, ds, config, snap)
                 up.close(); ds.close()
-                return ok, ur, dr, used_sample, u_time, d_time
+                return ok, ur, dr, detail, u_time, d_time
             verify_start = time.time()
-            ok, ur, dr, used_sample, u_time, d_time = run_with_activity_indicator("Verify Consistency", do_verify, config, last_sync, last_verify, last_error)
-            log_verify_result(ok, ur, dr, sample=used_sample, snapshot_label=snap_label)
+            ok, ur, dr, detail, u_time, d_time = run_with_activity_indicator("Verify Consistency", do_verify, config, last_sync, last_verify, last_error)
+            log_verify_result(ok, ur, dr, mode="FULL", snapshot_label=snap_label)
             verify_elapsed = time.time() - verify_start
             u_dur = u_time or 0.0
             d_dur = d_time or 0.0
-            log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode={'FAST' if used_sample else 'FULL'} snapshot={snap_label}")
-            last_verify = f"{time.strftime('%Y-%m-%d %H:%M:%S')} ({'FAST' if used_sample else 'FULL'})"
+            log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode=FULL snapshot={snap_label}")
+            last_verify = f"{time.strftime('%Y-%m-%d %H:%M:%S')} (FULL)"
             if not ok:
                 last_error = "Verify failed"
         elif c == "Manual Sync Now":
@@ -815,7 +909,7 @@ def main():
             config["sync_interval"] = interval; save_config(config); sync_loop(config, interval)
 
 def setup_config(existing=None):
-    w = existing if existing else {"upstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db1", "table": "t1"}, "downstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db2", "table": "t2"}, "stage": {"name": "s1"}, "sync_interval": 60, "verify_interval": 50}
+    w = existing if existing else {"upstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db1", "table": "t1"}, "downstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db2", "table": "t2"}, "stage": {"name": "s1"}, "sync_interval": 60, "verify_interval": 50, "verify_columns": []}
     def text_default(value):
         return "" if value is None else str(value)
     def ask_text(prompt, default, secret=False):
@@ -825,8 +919,10 @@ def setup_config(existing=None):
             res = questionary.text(prompt, default=default).ask()
         return default if res is None else res
     while True:
-        table = Table(title="Config"); table.add_row("Up", f"{w['upstream']['db']}.{w['upstream']['table']}"); table.add_row("Ds", f"{w['downstream']['db']}.{w['downstream']['table']}"); table.add_row("Verify", str(w.get('verify_interval'))); console.print(table)
-        c = questionary.select("Action:", choices=["Edit Upstream", "Edit Downstream", "Edit Stage", "Edit Verify Interval", "Save", "Discard"]).ask()
+        verify_cols = w.get("verify_columns", [])
+        verify_cols_text = ",".join(verify_cols) if verify_cols else ""
+        table = Table(title="Config"); table.add_row("Up", f"{w['upstream']['db']}.{w['upstream']['table']}"); table.add_row("Ds", f"{w['downstream']['db']}.{w['downstream']['table']}"); table.add_row("Verify", str(w.get('verify_interval'))); table.add_row("Fast Columns", verify_cols_text); console.print(table)
+        c = questionary.select("Action:", choices=["Edit Upstream", "Edit Downstream", "Edit Stage", "Edit Verify Interval", "Edit Fast Verify Columns", "Save", "Discard"]).ask()
         if c == "Save": save_config(w); return w
         if c == "Edit Upstream": w["upstream"] = {"host": ask_text("Host:", text_default(w["upstream"].get("host"))), "port": ask_text("Port:", text_default(w["upstream"].get("port"))), "user": ask_text("User:", text_default(w["upstream"].get("user"))), "password": ask_text("Pass:", text_default(w["upstream"].get("password")), secret=True), "db": ask_text("DB:", text_default(w["upstream"].get("db"))), "table": ask_text("Table:", text_default(w["upstream"].get("table")))}
         if c == "Edit Downstream": w["downstream"] = {"host": ask_text("Host:", text_default(w["downstream"].get("host"))), "port": ask_text("Port:", text_default(w["downstream"].get("port"))), "user": ask_text("User:", text_default(w["downstream"].get("user"))), "password": ask_text("Pass:", text_default(w["downstream"].get("password")), secret=True), "db": ask_text("DB:", text_default(w["downstream"].get("db"))), "table": ask_text("Table:", text_default(w["downstream"].get("table")))}
@@ -839,6 +935,12 @@ def setup_config(existing=None):
                 w["verify_interval"] = int(val)
             except ValueError:
                 log.warning(f"Invalid verify interval: {val}")
+        if c == "Edit Fast Verify Columns":
+            val = questionary.text("Columns (comma-separated):", default=verify_cols_text).ask()
+            if val is None:
+                continue
+            cols = [c.strip() for c in val.split(",") if c.strip()]
+            w["verify_columns"] = cols
         if c == "Discard" or c is None: return existing
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, time, shutil, pymysql, binascii
+import os, sys, time, shutil, pymysql
 from rich.console import Console
 from rich.panel import Panel
 
@@ -76,21 +76,20 @@ def main():
             raise Exception("Full verification after archeology was skipped!")
     console.print("[green]Archeology recovery and Full Re-verification PASSED![/green]")
 
-    # Phase 4: Dynamic Sampling Fast Check Test
-    console.print("[bold yellow]PHASE 4: Dynamic 1% Sampling Fast Check[/bold yellow]")
-    # Review Fix: Dynamically find ID that satisfies (CRC32(id) % 100 == 7)
-    sample_id = next(i for i in range(1000) if binascii.crc32(str(i).encode()) % 100 == 7)
-    console.print(f"Tampering with ID {sample_id} (known to be in sampling bucket)...")
+    # Phase 4: Fast Check with Verify Columns
+    console.print("[bold yellow]PHASE 4: Fast Check with Verify Columns[/bold yellow]")
+    tamper_id = 42
+    console.print(f"Tampering with ID {tamper_id} (verify_columns includes val)...")
     
-    ds1.execute(f"UPDATE {TEST_DS_DB1}.{TEST_TABLE} SET val = '{{\"hacked\": true}}' WHERE id = {sample_id}"); ds1.commit()
+    ds1.execute(f"UPDATE {TEST_DS_DB1}.{TEST_TABLE} SET val = '{{\"hacked\": true}}' WHERE id = {tamper_id}"); ds1.commit()
     
     up = DBConnection(UP_CFG, "Up"); up.connect()
-    config = {"upstream": UP_CFG, "downstream": DS1_CFG}
+    config = {"upstream": UP_CFG, "downstream": DS1_CFG, "verify_columns": ["val"]}
     tid = get_task_id(config); ws = get_watermarks(ds1, tid)
-    if verify_consistency(up, ds1, config, ws[0], sample=True):
-        raise Exception("Fast Check FAILED to catch dynamic data tampering!")
+    if verify_consistency(up, ds1, config, ws[0], mode="fast"):
+        raise Exception("Fast Check FAILED to catch data tampering with verify columns!")
     
-    console.print("[green]Dynamic Fast Check successfully caught corruption![/green]")
+    console.print("[green]Fast Check successfully caught corruption![/green]")
     console.print(Panel.fit("V3.2 REVIEWS FIXED & VERIFIED! [LEGENDARY HERO]", style="bold green"))
 
 if __name__ == "__main__":

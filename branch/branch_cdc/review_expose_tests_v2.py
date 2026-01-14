@@ -105,7 +105,7 @@ def test_verify_missing_table_should_fail():
     ds = DBConnection(cfg["downstream"], "Ds")
     if not up.connect() or not ds.connect():
         raise RuntimeError("Connect failed for missing-table verification test.")
-    ok = verify_consistency(up, ds, cfg)
+    ok = verify_consistency(up, ds, cfg, mode="full")
     up.close()
     ds.close()
     assert ok is False, "Expected verify_consistency to fail for missing tables, but it passed."
