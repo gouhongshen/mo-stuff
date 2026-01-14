@@ -262,16 +262,17 @@ def format_check_value(val):
         return "NULL"
     return str(val)
 
-def log_verify_result(ok, ur, dr, sample=False):
+def log_verify_result(ok, ur, dr, sample=False, snapshot_label=None):
     mode = "FAST" if sample else "FULL"
+    snap_info = f" snapshot={snapshot_label}" if snapshot_label else ""
     if ok and ur:
-        log.info(f"[green]{mode} VERIFY PASSED[/green] upstream rows={ur['c']} hash={format_check_value(ur['h'])}")
+        log.info(f"[green]{mode} VERIFY PASSED[/green] upstream rows={ur['c']} hash={format_check_value(ur['h'])}{snap_info}")
         return
     u_cnt = ur['c'] if ur else "N/A"
     u_hash = format_check_value(ur['h']) if ur else "N/A"
     d_cnt = dr['c'] if dr else "N/A"
     d_hash = format_check_value(dr['h']) if dr else "N/A"
-    log.error(f"[red]{mode} VERIFY FAILED[/red] upstream rows={u_cnt} hash={u_hash} downstream rows={d_cnt} hash={d_hash}")
+    log.error(f"[red]{mode} VERIFY FAILED[/red] upstream rows={u_cnt} hash={u_hash} downstream rows={d_cnt} hash={d_hash}{snap_info}")
 
 def run_with_activity_indicator(title, action_fn):
     result = {"value": None, "error": None}
@@ -490,7 +491,7 @@ def sync_loop(config, interval):
                             if ws:
                                 sample = not (v_int > 0 and sc % v_int == 0)
                                 ok, ur, dr = verify_consistency(up, ds, config, ws[0], sample=sample, return_detail=True)
-                                log_verify_result(ok, ur, dr, sample=sample)
+                                log_verify_result(ok, ur, dr, sample=sample, snapshot_label=ws[0])
                                 if not ok:
                                     log.warning("Consistency check FAILED; please investigate.")
                             up.close(); ds.close()
@@ -522,17 +523,33 @@ def main():
         if c == "Exit": sys.exit(0)
         elif c == "Edit Configuration": config = setup_config(config)
         elif c == "Verify Consistency":
+            ds_meta = DBConnection(config["downstream"], "DsMeta", autocommit=True)
+            if not ds_meta.connect(db_override=""):
+                log.error("Downstream connection failed; cannot verify.")
+                continue
+            tid = get_task_id(config)
+            ensure_meta_table(ds_meta)
+            snaps = get_watermarks(ds_meta, tid)[:MAX_WATERMARKS]
+            ds_meta.close()
+            latest_label = "Latest upstream (no snapshot)"
+            choices = snaps + [latest_label]
+            chosen = questionary.select("Verify snapshot:", choices=choices).ask()
+            if chosen is None:
+                continue
+            snap = None
+            snap_label = "LATEST"
+            if chosen != latest_label:
+                snap = chosen
+                snap_label = chosen
             def do_verify():
                 up, ds = DBConnection(config["upstream"], "Up", autocommit=True), DBConnection(config["downstream"], "Ds", autocommit=True)
                 ok, ur, dr = False, None, None
                 if up.connect() and ds.connect():
-                    tid = get_task_id(config); ensure_meta_table(ds); ws = get_watermarks(ds, tid)
-                    if ws:
-                        ok, ur, dr = verify_consistency(up, ds, config, ws[0], return_detail=True)
+                    ok, ur, dr = verify_consistency(up, ds, config, snap, return_detail=True)
                 up.close(); ds.close()
                 return ok, ur, dr
             ok, ur, dr = run_with_activity_indicator("Verify Consistency", do_verify)
-            log_verify_result(ok, ur, dr, sample=False)
+            log_verify_result(ok, ur, dr, sample=False, snapshot_label=snap_label)
         elif c == "Manual Sync Now":
             run_with_activity_indicator("Manual Sync", lambda: perform_sync(config))
         elif c == "Automatic Mode":
@@ -541,14 +558,16 @@ def main():
 
 def setup_config(existing=None):
     w = existing if existing else {"upstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db1", "table": "t1"}, "downstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db2", "table": "t2"}, "stage": {"name": "s1"}, "sync_interval": 60, "verify_interval": 50}
+    def text_default(value):
+        return "" if value is None else str(value)
     while True:
         table = Table(title="Config"); table.add_row("Up", f"{w['upstream']['db']}.{w['upstream']['table']}"); table.add_row("Ds", f"{w['downstream']['db']}.{w['downstream']['table']}"); table.add_row("Verify", str(w.get('verify_interval'))); console.print(table)
         c = questionary.select("Action:", choices=["Edit Upstream", "Edit Downstream", "Edit Stage", "Edit Verify Interval", "Save", "Discard"]).ask()
         if c == "Save": save_config(w); return w
-        if c == "Edit Upstream": w["upstream"] = {"host": questionary.text("Host:", default=w["upstream"]["host"]).ask(), "port": questionary.text("Port:", default=w["upstream"]["port"]).ask(), "user": questionary.text("User:", default=w["upstream"]["user"]).ask(), "password": questionary.password("Pass:", default=w["upstream"]["password"]).ask(), "db": questionary.text("DB:", default=w["upstream"]["db"]).ask(), "table": questionary.text("Table:", default=w["upstream"]["table"]).ask()}
-        if c == "Edit Downstream": w["downstream"] = {"host": questionary.text("Host:", default=w["downstream"]["host"]).ask(), "port": questionary.text("Port:", default=w["downstream"]["port"]).ask(), "user": questionary.text("User:", default=w["downstream"]["user"]).ask(), "password": questionary.password("Pass:", default=w["downstream"]["password"]).ask(), "db": questionary.text("DB:", default=w["downstream"]["db"]).ask(), "table": questionary.text("Table:", default=w["downstream"]["table"]).ask()}
-        if c == "Edit Stage": w["stage"] = {"name": questionary.text("Stage Name:", default=w["stage"]["name"]).ask()}
-        if c == "Edit Verify Interval": w["verify_interval"] = int(questionary.text("Interval:", default=str(w.get('verify_interval', 50))).ask())
+        if c == "Edit Upstream": w["upstream"] = {"host": questionary.text("Host:", default=text_default(w["upstream"].get("host"))).ask(), "port": questionary.text("Port:", default=text_default(w["upstream"].get("port"))).ask(), "user": questionary.text("User:", default=text_default(w["upstream"].get("user"))).ask(), "password": questionary.password("Pass:", default=text_default(w["upstream"].get("password"))).ask(), "db": questionary.text("DB:", default=text_default(w["upstream"].get("db"))).ask(), "table": questionary.text("Table:", default=text_default(w["upstream"].get("table"))).ask()}
+        if c == "Edit Downstream": w["downstream"] = {"host": questionary.text("Host:", default=text_default(w["downstream"].get("host"))).ask(), "port": questionary.text("Port:", default=text_default(w["downstream"].get("port"))).ask(), "user": questionary.text("User:", default=text_default(w["downstream"].get("user"))).ask(), "password": questionary.password("Pass:", default=text_default(w["downstream"].get("password"))).ask(), "db": questionary.text("DB:", default=text_default(w["downstream"].get("db"))).ask(), "table": questionary.text("Table:", default=text_default(w["downstream"].get("table"))).ask()}
+        if c == "Edit Stage": w["stage"] = {"name": questionary.text("Stage Name:", default=text_default(w.get("stage", {}).get("name"))).ask()}
+        if c == "Edit Verify Interval": w["verify_interval"] = int(questionary.text("Interval:", default=text_default(w.get("verify_interval", 50))).ask())
         if c == "Discard" or c is None: return existing
 
 if __name__ == "__main__":
