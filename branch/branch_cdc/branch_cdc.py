@@ -677,7 +677,9 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False, retur
                         f = get_diff_file_path(r)
                         if not f: continue
                         raw = up_conn.fetch_one("select load_file(cast(%s as datalink)) as c", (f,))['c']
-                        if raw is None: continue
+                        if raw is None:
+                            log.error(f"Load diff file failed: {f}")
+                            raise RuntimeError(f"load_file returned NULL: {f}")
                         stmt_str = raw.decode('utf-8') if isinstance(raw, bytes) else raw
                         target = f"`{d_cfg['db']}`.`{d_cfg['table']}`"
                         sql = re.compile(r'(delete\s+from\s+|replace\s+into\s+|insert\s+into\s+|update\s+)(/\*.*?\*/\s+)?([`\w]+\.[`\w]+|[`\w]+)', re.I|re.S).sub(lambda m: f"{m.group(1)}{m.group(2) or ''} {target} ", stmt_str)

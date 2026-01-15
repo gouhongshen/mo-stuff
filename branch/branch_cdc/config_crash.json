@@ -1,0 +1,1 @@
+{"upstream": {"host": "127.0.0.1", "port": 6001, "user": "dump", "password": "111", "db": "cdc_crash_up", "table": "crash_tbl"}, "downstream": {"host": "127.0.0.1", "port": 6001, "user": "dump", "password": "111", "db": "cdc_crash_ds", "table": "crash_tbl"}, "stage": {"url": "file:///tmp/mo_crash_v5"}}

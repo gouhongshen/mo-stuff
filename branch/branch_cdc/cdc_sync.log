@@ -633,3 +633,742 @@ Sync duration=0.049/0.001/0.128s status=NOOP
 Sync timing top3=diff:0.049s, precheck:0.039s, watermark:0.008s
 ------------------------------------------------------------------------
 Auto mode interrupted by user.
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111624094[/green]
+Sync duration=0.111/0.022/0.196s status=SUCCESS
+Sync timing top3=diff:0.111s, precheck:0.034s, apply:0.022s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111624094[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111634317[/green]
+Sync duration=0.115/0.011/0.232s status=SUCCESS
+Sync timing top3=diff:0.115s, precheck:0.030s, watermark:0.021s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111634317[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111644555[/green]
+Sync duration=0.201/0.015/0.341s status=SUCCESS
+Sync timing top3=diff:0.201s, precheck:0.028s, apply:0.015s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111644555[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111654963[/green]
+Sync duration=0.141/0.009/0.329s status=SUCCESS
+Sync timing top3=diff:0.141s, precheck:0.058s, watermark:0.031s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=2898872567 snapshot=branch_cdc_0fc5d807689f_260115111654963
+Verify duration=0.003/0.001/0.010s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115111654963
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111654963[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111705301[/green]
+Sync duration=0.262/0.013/0.536s status=SUCCESS
+Sync timing top3=diff:0.262s, precheck:0.040s, watermark:0.021s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111705301[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111715848[/green]
+Sync duration=0.205/0.021/0.428s status=SUCCESS
+Sync timing top3=diff:0.205s, precheck:0.040s, apply:0.021s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111715848[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111726289[/green]
+Sync duration=0.208/0.012/0.454s status=SUCCESS
+Sync timing top3=diff:0.208s, precheck:0.032s, watermark:0.023s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=1444599938 snapshot=branch_cdc_0fc5d807689f_260115111726289
+Verify duration=0.006/0.001/0.015s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115111726289
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111726289[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111736824[/green]
+Sync duration=0.703/0.226/1.345s status=SUCCESS
+Sync timing top3=diff:0.703s, apply:0.226s, cleanup:0.076s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111736824[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111748152[/green]
+Sync duration=0.286/0.021/0.586s status=SUCCESS
+Sync timing top3=diff:0.286s, precheck:0.035s, watermark:0.022s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111748152[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111758813[/green]
+Sync duration=0.181/0.013/0.484s status=SUCCESS
+Sync timing top3=diff:0.181s, precheck:0.069s, watermark:0.043s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=3201293230 snapshot=branch_cdc_0fc5d807689f_260115111758813
+Verify duration=0.004/0.002/0.013s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115111758813
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111758813[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111809302[/green]
+Sync duration=0.173/0.012/0.349s status=SUCCESS
+Sync timing top3=diff:0.173s, precheck:0.049s, watermark:0.029s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111809302[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111819656[/green]
+Sync duration=0.195/0.019/0.421s status=SUCCESS
+Sync timing top3=diff:0.195s, precheck:0.041s, watermark:0.029s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111819656[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111830134[/green]
+Sync duration=0.159/0.014/0.409s status=SUCCESS
+Sync timing top3=diff:0.159s, precheck:0.065s, watermark:0.036s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=2881366783 snapshot=branch_cdc_0fc5d807689f_260115111830134
+Verify duration=0.005/0.002/0.016s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115111830134
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111830134[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111840559[/green]
+Sync duration=0.094/0.007/0.243s status=SUCCESS
+Sync timing top3=diff:0.094s, precheck:0.041s, watermark:0.018s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111840559[/blue]
+[yellow]Sync NOOP | branch_cdc_0fc5d807689f_260115111850820[/yellow]
+Sync duration=0.121/0.001/0.249s status=NOOP
+Sync timing top3=diff:0.121s, precheck:0.041s, watermark:0.019s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111840559[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111901490[/green]
+Sync duration=0.218/0.048/0.900s status=SUCCESS
+Sync timing top3=precheck:0.332s, diff:0.218s, watermark:0.062s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=1426753120 snapshot=branch_cdc_0fc5d807689f_260115111901490
+Verify duration=0.009/0.013/0.047s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115111901490
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111901490[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111912739[/green]
+Sync duration=0.329/0.039/1.138s status=SUCCESS
+Sync timing top3=precheck:0.416s, diff:0.329s, watermark:0.096s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111912739[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111924139[/green]
+Sync duration=0.457/0.057/1.680s status=SUCCESS
+Sync timing top3=precheck:0.466s, diff:0.457s, watermark:0.220s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111924139[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111935552[/green]
+Sync duration=0.426/0.055/1.177s status=SUCCESS
+Sync timing top3=diff:0.426s, precheck:0.273s, watermark:0.084s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=3444444681 snapshot=branch_cdc_0fc5d807689f_260115111935552
+Verify duration=0.068/0.022/0.184s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115111935552
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111935552[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111947100[/green]
+Sync duration=0.736/0.116/1.850s status=SUCCESS
+Sync timing top3=diff:0.736s, precheck:0.270s, cleanup:0.140s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111947100[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115111959140[/green]
+Sync duration=0.748/0.072/1.894s status=SUCCESS
+Sync timing top3=diff:0.748s, precheck:0.351s, watermark:0.124s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115111959140[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112011572[/green]
+Sync duration=0.603/0.069/2.360s status=SUCCESS
+Sync timing top3=precheck:0.690s, diff:0.603s, watermark:0.178s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=3572077950 snapshot=branch_cdc_0fc5d807689f_260115112011572
+Verify duration=0.050/0.024/0.113s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115112011572
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112011572[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112023866[/green]
+Sync duration=0.630/0.121/2.140s status=SUCCESS
+Sync timing top3=diff:0.630s, precheck:0.345s, cleanup:0.281s
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=1164544005 snapshot=branch_cdc_0fc5d807689f_260115112023866
+Verify duration=0.068/0.020/0.526s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115112023866
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112023866[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112048504[/green]
+Sync duration=1.376/0.108/3.402s status=SUCCESS
+Sync timing top3=diff:1.376s, precheck:0.773s, watermark:0.222s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112048504[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112056727[/green]
+Sync duration=0.778/0.064/2.370s status=SUCCESS
+Sync timing top3=diff:0.778s, precheck:0.528s, watermark:0.126s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112056727[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112104074[/green]
+Sync duration=0.632/0.079/2.163s status=SUCCESS
+Sync timing top3=diff:0.632s, precheck:0.424s, cleanup:0.155s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=3088872392 snapshot=branch_cdc_0fc5d807689f_260115112104074
+Verify duration=0.060/0.019/0.135s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115112104074
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112104074[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112112089[/green]
+Sync duration=0.831/0.081/2.761s status=SUCCESS
+Sync timing top3=diff:0.831s, precheck:0.644s, watermark:0.258s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112112089[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112119699[/green]
+Sync duration=0.859/0.073/2.538s status=SUCCESS
+Sync timing top3=diff:0.859s, precheck:0.474s, watermark:0.147s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112119699[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112128412[/green]
+Sync duration=0.889/0.126/3.744s status=SUCCESS
+Sync timing top3=precheck:1.507s, diff:0.889s, watermark:0.202s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=2902946785 snapshot=branch_cdc_0fc5d807689f_260115112128412
+Verify duration=0.051/0.028/0.134s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115112128412
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112128412[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112136366[/green]
+Sync duration=0.852/0.084/2.353s status=SUCCESS
+Sync timing top3=diff:0.852s, precheck:0.381s, watermark:0.114s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112136366[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112143695[/green]
+Sync duration=0.707/0.069/2.100s status=SUCCESS
+Sync timing top3=diff:0.707s, precheck:0.283s, cleanup:0.221s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112143695[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112151197[/green]
+Sync duration=0.709/0.068/2.216s status=SUCCESS
+Sync timing top3=diff:0.709s, precheck:0.493s, watermark:0.176s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=450418424 snapshot=branch_cdc_0fc5d807689f_260115112151197
+Verify duration=0.031/0.015/0.078s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115112151197
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112151197[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112158328[/green]
+Sync duration=0.581/0.052/1.736s status=SUCCESS
+Sync timing top3=diff:0.581s, precheck:0.199s, watermark:0.108s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112158328[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112205649[/green]
+Sync duration=1.010/0.117/3.046s status=SUCCESS
+Sync timing top3=diff:1.010s, precheck:0.623s, watermark:0.133s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112205649[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112213451[/green]
+Sync duration=0.878/0.084/2.339s status=SUCCESS
+Sync timing top3=diff:0.878s, precheck:0.313s, watermark:0.096s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=2803643745 snapshot=branch_cdc_0fc5d807689f_260115112213451
+Verify duration=0.066/0.011/0.148s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115112213451
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112213451[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112221395[/green]
+Sync duration=1.241/0.068/2.546s status=SUCCESS
+Sync timing top3=diff:1.241s, precheck:0.361s, watermark:0.195s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112221395[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112228875[/green]
+Sync duration=0.772/0.085/2.324s status=SUCCESS
+Sync timing top3=diff:0.772s, precheck:0.245s, watermark:0.179s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112228875[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112236305[/green]
+Sync duration=1.918/0.115/3.646s status=SUCCESS
+Sync timing top3=diff:1.918s, precheck:0.302s, watermark:0.123s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=3950884848 snapshot=branch_cdc_0fc5d807689f_260115112236305
+Verify duration=0.039/0.015/0.092s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115112236305
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112236305[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112245591[/green]
+Sync duration=1.180/0.082/3.165s status=SUCCESS
+Sync timing top3=diff:1.180s, precheck:0.518s, watermark:0.135s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112245591[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112253655[/green]
+Sync duration=1.047/0.070/2.672s status=SUCCESS
+Sync timing top3=diff:1.047s, precheck:0.299s, watermark:0.177s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112253655[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112301356[/green]
+Sync duration=1.619/0.150/4.701s status=SUCCESS
+Sync timing top3=diff:1.619s, cleanup:0.282s, precheck:0.265s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=4263434105 snapshot=branch_cdc_0fc5d807689f_260115112301356
+Verify duration=0.048/0.014/0.135s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115112301356
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_127_0_0_1_6001_tpcc_ds_bmsql_district | From branch_cdc_0fc5d807689f_260115112301356[/blue]
+[green]Sync SUCCESS | branch_cdc_0fc5d807689f_260115112312444[/green]
+Sync duration=1.638/0.085/4.409s status=SUCCESS
+Sync timing top3=diff:1.638s, precheck:0.952s, watermark:0.161s
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=129594725 snapshot=branch_cdc_0fc5d807689f_260115112312444
+Verify duration=0.070/0.034/0.398s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115112312444
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=129594725 snapshot=branch_cdc_0fc5d807689f_260115112312444
+Verify duration=0.127/0.090/0.787s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115112312444
+[red]FULL VERIFY FAILED[/red] upstream rows=100 hash=4263434105 downstream rows=100 hash=129594725 snapshot=branch_cdc_0fc5d807689f_260115112301356
+Verify duration=0.094/0.042/0.402s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115112301356
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=129594725 snapshot=branch_cdc_0fc5d807689f_260115112312444
+Verify duration=0.085/0.053/0.518s mode=FULL snapshot=branch_cdc_0fc5d807689f_260115112312444
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112750399[/green]
+Sync duration=0.601/0.624/2.228s status=SUCCESS
+Sync timing top3=precheck:0.874s, apply:0.624s, diff:0.601s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=2669078398 snapshot=branch_cdc_52d75dfa129c_260115112750399
+Verify duration=0.005/0.026/0.507s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115112750399
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=2669078398 snapshot=LATEST
+Verify duration=0.006/0.021/0.621s mode=FULL snapshot=LATEST
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112750399[/blue]
+[yellow]Sync NOOP | branch_cdc_52d75dfa129c_260115112825425[/yellow]
+Sync duration=0.572/0.120/1.613s status=NOOP
+Sync timing top3=diff:0.572s, precheck:0.457s, watermark:0.408s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112750399[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112832244[/green]
+Sync duration=0.724/0.222/2.003s status=SUCCESS
+Sync timing top3=diff:0.724s, precheck:0.583s, watermark:0.386s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112832244[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112839416[/green]
+Sync duration=0.679/0.179/1.960s status=SUCCESS
+Sync timing top3=diff:0.679s, precheck:0.526s, watermark:0.504s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=1973390670 snapshot=branch_cdc_52d75dfa129c_260115112839416
+Verify duration=0.002/0.020/0.359s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115112839416
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112839416[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112846814[/green]
+Sync duration=0.680/0.188/1.830s status=SUCCESS
+Sync timing top3=diff:0.680s, precheck:0.511s, watermark:0.380s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112846814[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112853808[/green]
+Sync duration=0.694/0.209/2.000s status=SUCCESS
+Sync timing top3=diff:0.694s, precheck:0.564s, watermark:0.396s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112853808[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112900861[/green]
+Sync duration=0.565/0.160/1.799s status=SUCCESS
+Sync timing top3=diff:0.565s, precheck:0.519s, watermark:0.397s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=2512829952 snapshot=branch_cdc_52d75dfa129c_260115112900861
+Verify duration=0.014/0.020/0.385s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115112900861
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112900861[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112908201[/green]
+Sync duration=0.628/0.413/2.036s status=SUCCESS
+Sync timing top3=diff:0.628s, precheck:0.459s, apply:0.413s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112908201[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112915564[/green]
+Sync duration=0.748/0.199/2.318s status=SUCCESS
+Sync timing top3=diff:0.748s, precheck:0.594s, watermark:0.417s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112915564[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112922889[/green]
+Sync duration=0.712/0.158/2.037s status=SUCCESS
+Sync timing top3=diff:0.712s, precheck:0.487s, watermark:0.403s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=3059536221 snapshot=branch_cdc_52d75dfa129c_260115112922889
+Verify duration=0.015/0.022/0.385s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115112922889
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112922889[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112930728[/green]
+Sync duration=0.697/0.190/2.108s status=SUCCESS
+Sync timing top3=diff:0.697s, precheck:0.538s, watermark:0.479s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112930728[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112938007[/green]
+Sync duration=0.896/0.175/2.621s status=SUCCESS
+Sync timing top3=diff:0.896s, precheck:0.562s, watermark:0.528s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112938007[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112945497[/green]
+Sync duration=0.695/0.170/1.955s status=SUCCESS
+Sync timing top3=diff:0.695s, precheck:0.480s, watermark:0.388s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=1439992096 snapshot=branch_cdc_52d75dfa129c_260115112945497
+Verify duration=0.007/0.024/0.485s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115112945497
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112945497[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115112953263[/green]
+Sync duration=0.824/0.196/2.200s status=SUCCESS
+Sync timing top3=diff:0.824s, precheck:0.527s, watermark:0.421s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115112953263[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113000542[/green]
+Sync duration=0.769/0.213/2.220s status=SUCCESS
+Sync timing top3=diff:0.769s, precheck:0.490s, watermark:0.429s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113000542[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113007812[/green]
+Sync duration=0.636/0.174/1.812s status=SUCCESS
+Sync timing top3=diff:0.636s, precheck:0.445s, watermark:0.420s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=2857844257 snapshot=branch_cdc_52d75dfa129c_260115113007812
+Verify duration=0.004/0.017/0.352s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113007812
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113007812[/blue]
+[yellow]Sync NOOP | branch_cdc_52d75dfa129c_260115113015247[/yellow]
+Sync duration=0.542/0.126/1.612s status=NOOP
+Sync timing top3=diff:0.542s, precheck:0.497s, watermark:0.394s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113007812[/blue]
+[yellow]Sync NOOP | branch_cdc_52d75dfa129c_260115113021909[/yellow]
+Sync duration=0.593/0.104/1.612s status=NOOP
+Sync timing top3=diff:0.593s, precheck:0.476s, watermark:0.368s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113007812[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113028909[/green]
+Sync duration=1.019/0.228/2.674s status=SUCCESS
+Sync timing top3=diff:1.019s, precheck:0.673s, watermark:0.422s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=3565130439 snapshot=branch_cdc_52d75dfa129c_260115113028909
+Verify duration=0.025/0.019/0.420s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113028909
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113028909[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113037103[/green]
+Sync duration=0.779/0.209/2.159s status=SUCCESS
+Sync timing top3=diff:0.779s, precheck:0.519s, watermark:0.393s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113037103[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113044613[/green]
+Sync duration=0.841/0.201/2.636s status=SUCCESS
+Sync timing top3=diff:0.841s, precheck:0.576s, watermark:0.570s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113044613[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113052138[/green]
+Sync duration=1.093/0.244/2.660s status=SUCCESS
+Sync timing top3=diff:1.093s, precheck:0.480s, watermark:0.454s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=846335298 snapshot=branch_cdc_52d75dfa129c_260115113052138
+Verify duration=0.026/0.019/0.442s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113052138
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113052138[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113100877[/green]
+Sync duration=1.205/0.185/3.011s status=SUCCESS
+Sync timing top3=diff:1.205s, watermark:0.585s, precheck:0.502s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113100877[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113108758[/green]
+Sync duration=0.707/0.190/1.947s status=SUCCESS
+Sync timing top3=diff:0.707s, precheck:0.474s, watermark:0.373s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113108758[/blue]
+[yellow]Sync NOOP | branch_cdc_52d75dfa129c_260115113115988[/yellow]
+Sync duration=0.826/0.118/2.030s status=NOOP
+Sync timing top3=diff:0.826s, precheck:0.619s, watermark:0.414s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=1260443723 snapshot=branch_cdc_52d75dfa129c_260115113108758
+Verify duration=0.012/0.017/0.363s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113108758
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113108758[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113123976[/green]
+Sync duration=0.810/0.176/2.638s status=SUCCESS
+Sync timing top3=precheck:0.846s, diff:0.810s, watermark:0.504s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113123976[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113131392[/green]
+Sync duration=0.896/0.216/2.394s status=SUCCESS
+Sync timing top3=diff:0.896s, precheck:0.574s, watermark:0.442s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113131392[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113138800[/green]
+Sync duration=0.882/0.186/2.455s status=SUCCESS
+Sync timing top3=diff:0.882s, precheck:0.506s, watermark:0.409s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=4179083375 snapshot=branch_cdc_52d75dfa129c_260115113138800
+Verify duration=0.031/0.018/0.416s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113138800
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113138800[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113147018[/green]
+Sync duration=0.932/0.248/2.620s status=SUCCESS
+Sync timing top3=diff:0.932s, precheck:0.522s, watermark:0.433s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113147018[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113154787[/green]
+Sync duration=0.675/0.189/2.182s status=SUCCESS
+Sync timing top3=diff:0.675s, precheck:0.533s, watermark:0.444s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113154787[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113202288[/green]
+Sync duration=0.714/0.189/2.238s status=SUCCESS
+Sync timing top3=precheck:0.728s, diff:0.714s, watermark:0.447s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=1054762005 snapshot=branch_cdc_52d75dfa129c_260115113202288
+Verify duration=0.008/0.018/0.405s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113202288
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113202288[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113209925[/green]
+Sync duration=0.639/0.175/1.947s status=SUCCESS
+Sync timing top3=diff:0.639s, precheck:0.508s, watermark:0.393s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113209925[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113217063[/green]
+Sync duration=0.733/0.180/2.057s status=SUCCESS
+Sync timing top3=diff:0.733s, watermark:0.498s, precheck:0.488s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113217063[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113224162[/green]
+Sync duration=0.724/0.174/1.984s status=SUCCESS
+Sync timing top3=diff:0.724s, precheck:0.542s, watermark:0.380s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=1631609259 snapshot=branch_cdc_52d75dfa129c_260115113224162
+Verify duration=0.009/0.018/0.412s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113224162
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113224162[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113231879[/green]
+Sync duration=0.795/0.177/2.150s status=SUCCESS
+Sync timing top3=diff:0.795s, precheck:0.527s, watermark:0.457s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113231879[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113239150[/green]
+Sync duration=0.699/0.185/2.075s status=SUCCESS
+Sync timing top3=diff:0.699s, precheck:0.526s, watermark:0.479s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113239150[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113246216[/green]
+Sync duration=0.741/0.197/2.024s status=SUCCESS
+Sync timing top3=diff:0.741s, precheck:0.487s, watermark:0.398s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=1945426714 snapshot=branch_cdc_52d75dfa129c_260115113246216
+Verify duration=0.018/0.019/0.376s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113246216
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113246216[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113253902[/green]
+Sync duration=0.666/0.177/2.128s status=SUCCESS
+Sync timing top3=diff:0.666s, precheck:0.545s, watermark:0.384s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113253902[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113301211[/green]
+Sync duration=0.784/0.186/2.126s status=SUCCESS
+Sync timing top3=diff:0.784s, precheck:0.512s, watermark:0.442s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113301211[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113308346[/green]
+Sync duration=0.823/0.160/2.071s status=SUCCESS
+Sync timing top3=diff:0.823s, precheck:0.477s, watermark:0.385s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=3401237166 snapshot=branch_cdc_52d75dfa129c_260115113308346
+Verify duration=0.013/0.019/0.383s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113308346
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113308346[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113316071[/green]
+Sync duration=0.728/0.196/2.043s status=SUCCESS
+Sync timing top3=diff:0.728s, precheck:0.462s, watermark:0.424s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113316071[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113323345[/green]
+Sync duration=1.049/0.165/2.630s status=SUCCESS
+Sync timing top3=diff:1.049s, precheck:0.523s, watermark:0.458s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113323345[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113330996[/green]
+Sync duration=0.807/0.183/2.315s status=SUCCESS
+Sync timing top3=diff:0.807s, precheck:0.456s, watermark:0.441s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=3286540170 snapshot=branch_cdc_52d75dfa129c_260115113330996
+Verify duration=0.029/0.022/0.438s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113330996
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113330996[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113339155[/green]
+Sync duration=0.639/0.153/2.507s status=SUCCESS
+Sync timing top3=diff:0.639s, watermark:0.540s, precheck:0.475s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113339155[/blue]
+[yellow]Sync NOOP | branch_cdc_52d75dfa129c_260115113346712[/yellow]
+Sync duration=0.489/0.107/1.676s status=NOOP
+Sync timing top3=precheck:0.491s, diff:0.489s, watermark:0.472s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113339155[/blue]
+[yellow]Sync NOOP | branch_cdc_52d75dfa129c_260115113353595[/yellow]
+Sync duration=0.800/0.158/2.134s status=NOOP
+Sync timing top3=diff:0.800s, watermark:0.563s, precheck:0.509s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=1241953266 snapshot=branch_cdc_52d75dfa129c_260115113339155
+Verify duration=0.019/0.023/0.437s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113339155
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113339155[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113401125[/green]
+Sync duration=0.669/0.177/1.797s status=SUCCESS
+Sync timing top3=diff:0.669s, precheck:0.433s, watermark:0.356s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113401125[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113408130[/green]
+Sync duration=0.644/0.175/1.892s status=SUCCESS
+Sync timing top3=diff:0.644s, precheck:0.458s, watermark:0.443s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113408130[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113415105[/green]
+Sync duration=0.611/0.183/1.830s status=SUCCESS
+Sync timing top3=diff:0.611s, precheck:0.481s, watermark:0.410s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=1675946071 snapshot=branch_cdc_52d75dfa129c_260115113415105
+Verify duration=0.009/0.017/0.374s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113415105
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113415105[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113422602[/green]
+Sync duration=0.578/0.181/1.906s status=SUCCESS
+Sync timing top3=diff:0.578s, precheck:0.546s, watermark:0.406s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113422602[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113429526[/green]
+Sync duration=0.595/0.162/1.850s status=SUCCESS
+Sync timing top3=diff:0.595s, precheck:0.493s, watermark:0.368s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113429526[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113436558[/green]
+Sync duration=0.660/0.181/1.996s status=SUCCESS
+Sync timing top3=diff:0.660s, precheck:0.515s, watermark:0.414s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=2769830935 snapshot=branch_cdc_52d75dfa129c_260115113436558
+Verify duration=0.016/0.021/0.357s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113436558
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113436558[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113444082[/green]
+Sync duration=0.672/0.155/1.907s status=SUCCESS
+Sync timing top3=diff:0.672s, precheck:0.466s, watermark:0.416s
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=4278459203 snapshot=branch_cdc_52d75dfa129c_260115113444082
+Verify duration=0.009/0.025/0.623s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113444082
+[red]FULL VERIFY FAILED[/red] upstream rows=100 hash=2769830935 downstream rows=100 hash=4278459203 snapshot=branch_cdc_52d75dfa129c_260115113436558
+Verify duration=0.021/0.020/0.625s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113436558
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=4278459203 snapshot=branch_cdc_52d75dfa129c_260115113444082
+Verify duration=0.024/0.021/0.618s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113444082
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=4278459203 snapshot=branch_cdc_52d75dfa129c_260115113444082
+Verify duration=0.024/0.018/0.502s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113444082
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=4278459203 snapshot=branch_cdc_52d75dfa129c_260115113444082
+Verify duration=0.015/0.019/0.742s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113444082
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113444082[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113515518[/green]
+Sync duration=0.626/0.176/1.761s status=SUCCESS
+Sync timing top3=diff:0.626s, precheck:0.426s, watermark:0.378s
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=1846063198 snapshot=branch_cdc_52d75dfa129c_260115113515518
+Verify duration=0.010/0.020/0.492s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113515518
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113515518[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113527108[/green]
+Sync duration=0.542/0.177/1.582s status=SUCCESS
+Sync timing top3=diff:0.542s, precheck:0.426s, watermark:0.339s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113527108[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113559015[/green]
+Sync duration=0.632/0.184/1.948s status=SUCCESS
+Sync timing top3=diff:0.632s, precheck:0.533s, watermark:0.457s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113559015[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113631021[/green]
+Sync duration=0.443/0.188/1.779s status=SUCCESS
+Sync timing top3=precheck:0.534s, diff:0.443s, watermark:0.425s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=3937501582 snapshot=branch_cdc_52d75dfa129c_260115113631021
+Verify duration=0.022/0.024/0.431s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113631021
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113631021[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113703442[/green]
+Sync duration=0.690/0.184/1.935s status=SUCCESS
+Sync timing top3=diff:0.690s, precheck:0.523s, watermark:0.401s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113703442[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113735461[/green]
+Sync duration=0.679/0.174/1.915s status=SUCCESS
+Sync timing top3=diff:0.679s, precheck:0.513s, watermark:0.397s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113735461[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113808089[/green]
+Sync duration=1.639/0.292/3.388s status=SUCCESS
+Sync timing top3=diff:1.639s, precheck:0.748s, watermark:0.482s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=2311175540 snapshot=branch_cdc_52d75dfa129c_260115113808089
+Verify duration=0.039/0.097/0.545s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113808089
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113808089[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113844672[/green]
+Sync duration=2.951/0.569/6.700s status=SUCCESS
+Sync timing top3=diff:2.951s, watermark:1.598s, precheck:1.279s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113844672[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113919770[/green]
+Sync duration=0.595/0.164/1.872s status=SUCCESS
+Sync timing top3=diff:0.595s, precheck:0.589s, watermark:0.424s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113919770[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115113954149[/green]
+Sync duration=1.468/0.217/5.183s status=SUCCESS
+Sync timing top3=precheck:2.604s, diff:1.468s, watermark:0.618s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=864475357 snapshot=branch_cdc_52d75dfa129c_260115113954149
+Verify duration=0.023/0.051/0.522s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115113954149
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115113954149[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115114028489[/green]
+Sync duration=0.978/0.262/2.840s status=SUCCESS
+Sync timing top3=diff:0.978s, precheck:0.889s, watermark:0.409s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_district_to_freetier-01_cn-hangzhou_cluster_cn-dev_matrixone_tech_6001_tpcc_ds_bmsql_district | From branch_cdc_52d75dfa129c_260115114028489[/blue]
+[green]Sync SUCCESS | branch_cdc_52d75dfa129c_260115114102340[/green]
+Sync duration=0.972/0.306/3.877s status=SUCCESS
+Sync timing top3=precheck:1.294s, diff:0.972s, watermark:0.712s
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+[green]FULL VERIFY PASSED[/green] upstream rows=100 hash=431016178 snapshot=branch_cdc_52d75dfa129c_260115114102340
+Verify duration=0.026/0.048/0.739s mode=FULL snapshot=branch_cdc_52d75dfa129c_260115114102340
