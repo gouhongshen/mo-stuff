@@ -27,8 +27,8 @@ cli_args, _ = parser.parse_known_args()
 
 CONFIG_FILE = os.path.abspath(cli_args.config)
 META_DB, META_TABLE, META_LOCK_TABLE = "branch_cdc_db", "meta", "meta_lock"
-SNAPSHOT_PREFIX = "branch_cdc_"
 MAX_WATERMARKS, LOCK_TIMEOUT_SEC = 4, 30
+DEFAULT_PITR_RANGE_DAYS = 7
 FULL_VERIFY_MAX_BYTES = 1024 * 1024 * 1024
 FULL_VERIFY_MAX_ROWS = 100000
 INSTANCE_ID = f"{socket.gethostname()}_{os.getpid()}_{uuid.uuid4().hex[:6]}"
@@ -83,10 +83,14 @@ def get_task_id(config):
 
 def ensure_meta_table(ds_conn):
     ds_conn.execute(f"CREATE DATABASE IF NOT EXISTS `{META_DB}`"); ds_conn.commit()
-    ds_conn.execute(f"CREATE TABLE IF NOT EXISTS `{META_DB}`.`{META_TABLE}` (task_id VARCHAR(512), watermark VARCHAR(255), lock_owner VARCHAR(255), lock_time TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"); ds_conn.commit()
+    ds_conn.execute(f"CREATE TABLE IF NOT EXISTS `{META_DB}`.`{META_TABLE}` (task_id VARCHAR(512), watermark BIGINT UNSIGNED, lock_owner VARCHAR(255), lock_time TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"); ds_conn.commit()
     ds_conn.execute(f"CREATE TABLE IF NOT EXISTS `{META_DB}`.`{META_LOCK_TABLE}` (task_id VARCHAR(512) PRIMARY KEY, lock_owner VARCHAR(255), lock_time TIMESTAMP)"); ds_conn.commit()
     try:
         ds_conn.execute(f"ALTER TABLE `{META_DB}`.`{META_TABLE}` MODIFY COLUMN task_id VARCHAR(512)"); ds_conn.commit()
+    except:
+        pass
+    try:
+        ds_conn.execute(f"ALTER TABLE `{META_DB}`.`{META_TABLE}` MODIFY COLUMN watermark BIGINT UNSIGNED"); ds_conn.commit()
     except:
         pass
     try:
@@ -128,57 +132,98 @@ def release_lock(ds_conn, tid):
     except: pass
 
 def get_watermarks(ds_conn, tid):
-    try: return [r['watermark'] for r in ds_conn.query(f"SELECT watermark FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s AND watermark IS NOT NULL ORDER BY created_at DESC", (tid,))]
-    except: return []
-
-def list_upstream_snapshots(up_conn, config, tid):
-    sid_prefix = hashlib.md5(tid.encode()).hexdigest()[:12]
-    pattern = f"{SNAPSHOT_PREFIX}{sid_prefix}_%"
     try:
-        snaps = up_conn.query(
-            "SELECT sname FROM mo_catalog.mo_snapshots WHERE sname LIKE %s AND database_name=%s AND table_name=%s ORDER BY ts DESC",
-            (pattern, config["upstream"]["db"], config["upstream"]["table"]),
-        )
-        return [s["sname"] for s in snaps]
+        rows = ds_conn.query(f"SELECT watermark FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s AND watermark IS NOT NULL ORDER BY created_at DESC", (tid,))
+    except:
+        return []
+    out = []
+    for r in rows:
+        w = r.get("watermark")
+        if w is None:
+            continue
+        try:
+            out.append(int(w))
+        except (TypeError, ValueError):
+            continue
+    return out
+
+def get_table_id(up_conn, db, table):
+    queries = [
+        ("SELECT rel_id FROM mo_catalog.mo_tables WHERE relname=%s AND reldatabase=%s AND account_id = current_account_id()", (table, db)),
+        ("SELECT rel_id FROM mo_catalog.mo_tables WHERE relname=%s AND reldatabase=%s", (table, db)),
+    ]
+    for sql, args in queries:
+        try:
+            r = up_conn.fetch_one(sql, args)
+        except:
+            r = None
+        if r and r.get("rel_id") is not None:
+            return int(r["rel_id"])
+    return None
+
+def get_database_id(up_conn, db):
+    queries = [
+        ("SELECT dat_id FROM mo_catalog.mo_database WHERE datname=%s AND account_id = current_account_id()", (db,)),
+        ("SELECT dat_id FROM mo_catalog.mo_database WHERE datname=%s", (db,)),
+    ]
+    for sql, args in queries:
+        try:
+            r = up_conn.fetch_one(sql, args)
+        except:
+            r = None
+        if r and r.get("dat_id") is not None:
+            return int(r["dat_id"])
+    return None
+
+def list_active_pitr(up_conn, table_id, db_id):
+    clauses, args = [], []
+    if table_id is not None:
+        clauses.append("(level = 'table' AND obj_id = %s)")
+        args.append(table_id)
+    if db_id is not None:
+        clauses.append("(level = 'database' AND obj_id = %s)")
+        args.append(db_id)
+    if not clauses:
+        return []
+    where = " OR ".join(clauses)
+    sql = (
+        "SELECT pitr_name, level, obj_id, pitr_length, pitr_unit "
+        "FROM mo_catalog.mo_pitr "
+        "WHERE pitr_status = 1 AND create_account = current_account_id() AND (" + where + ") "
+        "ORDER BY modified_time DESC"
+    )
+    try:
+        return up_conn.query(sql, tuple(args))
     except:
         return []
 
-def cleanup_snapshots_after_verify(up_conn, ds_conn, config, verified_snapshot=None):
-    tid = get_task_id(config)
-    snaps = list_upstream_snapshots(up_conn, config, tid)
-    if len(snaps) <= MAX_WATERMARKS:
-        return
-    last_success = verified_snapshot
-    if not last_success:
-        ws = get_watermarks(ds_conn, tid)
-        last_success = ws[0] if ws else None
-    if not last_success:
-        log.warning("Snapshot cleanup skipped: no last_success watermark.")
-        return
-    if last_success not in snaps:
-        log.warning(f"Snapshot cleanup skipped: last_success {last_success} not found upstream.")
-        return
-    anchor_idx = snaps.index(last_success)
-    keep = snaps[anchor_idx:anchor_idx + MAX_WATERMARKS]
-    keep_set = set(keep)
-    drop = [s for s in snaps if s not in keep_set]
-    if not drop:
-        return
-    log.info(f"Snapshot cleanup: keep {len(keep)}, drop {len(drop)}")
-    for s in drop:
+def get_pitr_record(up_conn, pitr_name):
+    queries = [
+        ("SELECT pitr_name, level, obj_id, pitr_status, pitr_length, pitr_unit FROM mo_catalog.mo_pitr WHERE pitr_name=%s AND create_account = current_account_id()", (pitr_name,)),
+        ("SELECT pitr_name, level, obj_id, pitr_status, pitr_length, pitr_unit FROM mo_catalog.mo_pitr WHERE pitr_name=%s", (pitr_name,)),
+    ]
+    for sql, args in queries:
         try:
-            up_conn.execute(f"DROP SNAPSHOT IF EXISTS `{s}`"); up_conn.commit()
-        except Exception as e:
-            log.warning(f"Snapshot cleanup drop failed: {s}: {e}")
-    try:
-        placeholders = ",".join(["%s"] * len(keep))
-        ds_conn.execute(
-            f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s AND watermark IS NOT NULL AND watermark NOT IN ({placeholders})",
-            (tid, *keep),
-        )
-        ds_conn.commit()
-    except Exception as e:
-        log.warning(f"Snapshot cleanup meta prune failed: {e}")
+            r = up_conn.fetch_one(sql, args)
+        except:
+            r = None
+        if r:
+            return r
+    return None
+
+def format_pitr_label(pitr):
+    name = pitr.get("pitr_name", "")
+    level = pitr.get("level", "")
+    length = pitr.get("pitr_length")
+    unit = pitr.get("pitr_unit")
+    range_str = ""
+    if length is not None and unit:
+        range_str = f", range={length}{unit}"
+    return f"{name} (level={level}{range_str})"
+
+def generate_pitr_name(db, table):
+    base = f"pitr_{db}_{table}_{datetime.now().strftime('%y%m%d%H%M%S')}"
+    return re.sub(r"[^a-zA-Z0-9_]", "_", base)
 
 def lock_is_held(ds_conn, tid):
     try:
@@ -301,8 +346,8 @@ def get_table_columns(conn, db, table):
     try: return conn.query(f"SHOW COLUMNS FROM `{db}`.`{table}`")
     except: return None
 
-def build_check_sql(db, table, cols, snap=None):
-    sc = f"{{snapshot = '{snap}'}}" if snap else ""
+def build_check_sql(db, table, cols, mo_ts=None):
+    sc = f"{{MO_TS = {mo_ts}}}" if mo_ts else ""
     if not cols:
         return f"SELECT COUNT(*) as c, NULL as h FROM `{db}`.`{table}`{sc}"
     p_cols = [f"IFNULL(HEX(`{c['Field']}`), 'NULL')" if "vec" in c['Type'].lower() else f"IFNULL(CAST(`{c['Field']}` AS VARCHAR), 'NULL')" for c in cols]
@@ -320,8 +365,8 @@ def get_table_size_bytes(conn, db, table):
     except (TypeError, ValueError, KeyError):
         return None
 
-def get_table_count(conn, db, table, snap=None):
-    sc = f"{{snapshot = '{snap}'}}" if snap else ""
+def get_table_count(conn, db, table, mo_ts=None):
+    sc = f"{{MO_TS = {mo_ts}}}" if mo_ts else ""
     try:
         res = conn.fetch_one(f"SELECT COUNT(*) as c FROM `{db}`.`{table}`{sc}")
     except:
@@ -367,16 +412,16 @@ def resolve_fast_check_columns(u_cols, d_cols, config):
     d_sel = [d_map[c] for c in cols] if cols else []
     return u_sel, d_sel, detail
 
-def is_small_table(up_conn, config, snap=None):
+def is_small_table(up_conn, config, mo_ts=None):
     size_bytes = get_table_size_bytes(up_conn, config["upstream"]["db"], config["upstream"]["table"])
     if size_bytes is not None and size_bytes > 0:
         return size_bytes < FULL_VERIFY_MAX_BYTES
-    row_count = get_table_count(up_conn, config["upstream"]["db"], config["upstream"]["table"], snap=snap)
+    row_count = get_table_count(up_conn, config["upstream"]["db"], config["upstream"]["table"], mo_ts=mo_ts)
     if row_count is not None:
         return row_count < FULL_VERIFY_MAX_ROWS
     return False
 
-def verify_consistency(up_conn, ds_conn, config, snap=None, mode="fast", return_detail=False):
+def verify_consistency(up_conn, ds_conn, config, mo_ts=None, mode="fast", return_detail=False):
     u, d = config["upstream"], config["downstream"]
     err = None
     u_time = None
@@ -395,7 +440,7 @@ def verify_consistency(up_conn, ds_conn, config, snap=None, mode="fast", return_
             detail = "all"
         else:
             u_sel, d_sel, detail = resolve_fast_check_columns(u_cols, d_cols, config)
-        u_sql = build_check_sql(u["db"], u["table"], u_sel, snap)
+        u_sql = build_check_sql(u["db"], u["table"], u_sel, mo_ts)
         d_sql = build_check_sql(d["db"], d["table"], d_sel, None)
         if u_sql is None or d_sql is None:
             if return_detail:
@@ -422,9 +467,9 @@ def verify_consistency(up_conn, ds_conn, config, snap=None, mode="fast", return_
             return False, None, None, detail, err, u_time, d_time
         return False
 
-def verify_watermark_consistency(up_conn, ds_conn, config, snap, retries=3, wait_sec=5):
+def verify_watermark_consistency(up_conn, ds_conn, config, mo_ts, retries=3, wait_sec=5):
     for attempt in range(1, retries + 1):
-        ok, ur, dr, detail, err, _, _ = verify_consistency(up_conn, ds_conn, config, snap, mode="fast", return_detail=True)
+        ok, ur, dr, detail, err, _, _ = verify_consistency(up_conn, ds_conn, config, mo_ts, mode="fast", return_detail=True)
         if ok:
             if detail:
                 log.info(f"FAST CHECK PASSED type={detail}")
@@ -436,7 +481,7 @@ def verify_watermark_consistency(up_conn, ds_conn, config, snap, retries=3, wait
                 time.sleep(wait_sec)
                 continue
             return None
-        log_verify_result(False, ur, dr, mode="FAST", detail=detail, snapshot_label=snap)
+        log_verify_result(False, ur, dr, mode="FAST", detail=detail, mo_ts_label=mo_ts)
         return False
     return None
 
@@ -445,8 +490,21 @@ def format_check_value(val):
         return "NULL"
     return str(val)
 
-def log_verify_result(ok, ur, dr, mode="FAST", detail=None, snapshot_label=None):
-    snap_info = f" snapshot={snapshot_label}" if snapshot_label else ""
+def format_mo_ts_utc(mo_ts):
+    if mo_ts is None:
+        return None
+    try:
+        ts = int(mo_ts)
+    except (TypeError, ValueError):
+        return None
+    secs = ts // 1_000_000_000
+    frac = ts % 1_000_000_000
+    dt = datetime.utcfromtimestamp(secs)
+    frac_str = f"{frac:09d}"[:7]
+    return f"{dt.strftime('%Y-%m-%d %H:%M:%S')}.{frac_str} UTC"
+
+def log_verify_result(ok, ur, dr, mode="FAST", detail=None, mo_ts_label=None):
+    snap_info = f" mo_ts={mo_ts_label}" if mo_ts_label else ""
     detail_info = f" type={detail}" if detail and mode == "FAST" else ""
     if ok and ur:
         log.info(f"[green]{mode} VERIFY PASSED[/green]{detail_info} upstream rows={ur['c']} hash={format_check_value(ur['h'])}{snap_info}")
@@ -521,27 +579,117 @@ def run_with_activity_indicator(title, action_fn, config=None, last_sync=None, l
         raise result["error"]
     return result["value"]
 
-def generate_snapshot_name(tid):
-    sid = hashlib.md5(tid.encode()).hexdigest()[:12]
-    return f"{SNAPSHOT_PREFIX}{sid}_{datetime.now().strftime('%y%m%d%H%M%S%f')[:-3]}"
-
-def archeology_recovery(up_conn, ds_conn, config, tid):
-    sid_prefix = hashlib.md5(tid.encode()).hexdigest()[:12]
+def check_mo_ts_available(up_conn, config, mo_ts):
+    u_cfg = config["upstream"]
     try:
-        pattern = f"{SNAPSHOT_PREFIX}{sid_prefix}_%"
-        snaps = up_conn.query(
-            "SELECT sname FROM mo_catalog.mo_snapshots WHERE sname LIKE %s AND database_name=%s AND table_name=%s ORDER BY ts DESC LIMIT 10",
-            (pattern, config['upstream']['db'], config['upstream']['table']),
-        )
-    except: return None
-    for s in snaps:
-        snap = s['sname']
-        ok, _, _, _, _, _, _ = verify_consistency(up_conn, ds_conn, config, snap, mode="fast", return_detail=True)
-        if ok and verify_consistency(up_conn, ds_conn, config, snap, mode="full"):
-            log.info("[green]FULL Check PASSED[/green]")
-            log.info(f"[green]Watermark RECOVERED: {snap}[/green]")
-            ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, snap)); ds_conn.commit(); return snap
-    return None
+        up_conn.fetch_one(f"SELECT 1 FROM `{u_cfg['db']}`.`{u_cfg['table']}`{{MO_TS = {mo_ts}}} LIMIT 1")
+        return True
+    except:
+        return False
+
+def validate_pitr_config(up_conn, config):
+    pitr_cfg = config.get("pitr") or {}
+    name = pitr_cfg.get("name")
+    if not name:
+        return False, "PITR not configured"
+    rec = get_pitr_record(up_conn, name)
+    if not rec:
+        return False, f"PITR {name} not found"
+    status = rec.get("pitr_status")
+    if status is not None and str(status) != "1":
+        return False, f"PITR {name} inactive"
+    cfg_obj = pitr_cfg.get("obj_id")
+    rec_obj = rec.get("obj_id")
+    if cfg_obj is not None and rec_obj is not None and int(cfg_obj) != int(rec_obj):
+        return False, f"PITR {name} obj_id mismatch"
+    return True, None
+
+def configure_pitr(config):
+    u_cfg = config["upstream"]
+    up_conn = DBConnection(u_cfg, "UpPITR", autocommit=True)
+    if not up_conn.connect(db_override=""):
+        log.error("Upstream connection failed; cannot configure PITR.")
+        return config.get("pitr")
+    table_id = get_table_id(up_conn, u_cfg["db"], u_cfg["table"])
+    db_id = get_database_id(up_conn, u_cfg["db"])
+    if table_id is None or db_id is None:
+        log.error("Resolve object id failed; cannot configure PITR.")
+        up_conn.close()
+        return config.get("pitr")
+    pitr_list = list_active_pitr(up_conn, table_id, db_id)
+    choices = ["Create new PITR"]
+    choice_map = {}
+    for p in pitr_list:
+        label = format_pitr_label(p)
+        choices.append(label)
+        choice_map[label] = p
+    chosen = questionary.select("Select PITR:", choices=choices).ask()
+    if chosen is None:
+        up_conn.close()
+        return config.get("pitr")
+
+    def ask_range_value(default_val):
+        while True:
+            val = questionary.text("PITR range value:", default=str(default_val)).ask()
+            if val is None:
+                return None
+            try:
+                num = int(val)
+            except ValueError:
+                log.warning(f"Invalid PITR range value: {val}")
+                continue
+            if num <= 0 or num > 100:
+                log.warning(f"PITR range out of range: {num}")
+                continue
+            return num
+
+    def ask_range_unit(default_unit):
+        return questionary.select("PITR range unit:", choices=["h", "d", "mo", "y"], default=default_unit).ask()
+
+    if chosen == "Create new PITR":
+        name_default = generate_pitr_name(u_cfg["db"], u_cfg["table"])
+        name = questionary.text("PITR name:", default=name_default).ask()
+        if name is None:
+            up_conn.close()
+            return config.get("pitr")
+        length = ask_range_value(DEFAULT_PITR_RANGE_DAYS)
+        if length is None:
+            up_conn.close()
+            return config.get("pitr")
+        unit = ask_range_unit("d")
+        if unit is None:
+            up_conn.close()
+            return config.get("pitr")
+        try:
+            up_conn.execute(f"CREATE PITR `{name}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}` RANGE {length} '{unit}'"); up_conn.commit()
+        except Exception as e:
+            log.error(f"Create PITR failed: {e}")
+            up_conn.close()
+            return config.get("pitr")
+        pitr_cfg = {"name": name, "level": "table", "obj_id": table_id, "length": length, "unit": unit}
+    else:
+        p = choice_map.get(chosen) or {}
+        name = p.get("pitr_name")
+        length_default = p.get("pitr_length") or DEFAULT_PITR_RANGE_DAYS
+        unit_default = p.get("pitr_unit") or "d"
+        length = ask_range_value(length_default)
+        if length is None:
+            up_conn.close()
+            return config.get("pitr")
+        unit = ask_range_unit(unit_default)
+        if unit is None:
+            up_conn.close()
+            return config.get("pitr")
+        try:
+            up_conn.execute(f"ALTER PITR `{name}` RANGE {length} '{unit}'"); up_conn.commit()
+        except Exception as e:
+            log.error(f"Alter PITR failed: {e}")
+            up_conn.close()
+            return config.get("pitr")
+        pitr_cfg = {"name": name, "level": p.get("level"), "obj_id": p.get("obj_id"), "length": length, "unit": unit}
+
+    up_conn.close()
+    return pitr_cfg
 
 def perform_sync(config, is_auto=False, lock_held=False, force_full=False, return_detail=False):
     start_ts = time.time()
@@ -557,7 +705,7 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False, retur
     up_conn, ds_conn = DBConnection(u_cfg, "Up", autocommit=True), DBConnection(d_cfg, "Ds")
     keeper = LockKeeper(d_cfg, tid)
     dfiles = []
-    snapshot_created = False
+    new_mo_ts = None
     def sync_return(ok):
         if return_detail:
             return ok, sync_kind, sync_status
@@ -570,6 +718,10 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False, retur
             return sync_return(False)
         ds_conn.execute(f"CREATE DATABASE IF NOT EXISTS `{d_cfg['db']}`"); ds_conn.commit()
         ensure_meta_table(ds_conn)
+        ok, err = validate_pitr_config(up_conn, config)
+        if not ok:
+            log.error(f"Sync FAILED: {err}")
+            return sync_return(False)
         if lock_held:
             if not lock_is_held(ds_conn, tid):
                 log.warning("Lock lost before sync, skipping this cycle.")
@@ -590,12 +742,16 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False, retur
         lastgood = ws[0] if ws else None
         if force_full:
             lastgood = None
-        if not lastgood and target_exists and not force_full:
-            ds_cnt = ds_conn.fetch_one(f"SELECT COUNT(*) as c FROM `{d_cfg['table']}`")['c']
-            if ds_cnt > 0: lastgood = archeology_recovery(up_conn, ds_conn, config, tid)
-        
-        if lastgood and not up_conn.fetch_one(f"SELECT sname FROM mo_catalog.mo_snapshots WHERE sname = %s", (lastgood,)):
-            log.warning(f"Snapshot {lastgood} lost. Resetting to FULL sync.")
+        if lastgood is not None:
+            try:
+                lastgood = int(lastgood)
+            except (TypeError, ValueError):
+                log.warning(f"Invalid watermark {lastgood}. Resetting to FULL sync.")
+                ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,)); ds_conn.commit()
+                lastgood = None
+
+        if lastgood and not check_mo_ts_available(up_conn, config, lastgood):
+            log.warning(f"MO_TS {lastgood} unavailable. Resetting to FULL sync.")
             ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,)); ds_conn.commit()
             lastgood = None
         if lastgood:
@@ -620,7 +776,8 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False, retur
         record_timing(timings, "stage", stage_start)
 
         sync_kind = "FULL" if not lastgood else "INCREMENTAL"
-        newsnap = generate_snapshot_name(tid)
+        # Force a non-zero tail even if system clock resolution is coarse.
+        new_mo_ts = max(0, time.time_ns() - 1)
         with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as prg:
             if not lastgood:
                 log.info(f"[blue]FULL Sync | Task: {tid}[/blue]")
@@ -630,9 +787,8 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False, retur
                 up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cn}`"); up_conn.commit()
                 up_conn.execute(f"CREATE TABLE `{u_cfg['db']}`.`{t_zero}` LIKE `{u_cfg['db']}`.`{u_cfg['table']}`"); up_conn.commit()
                 diff_start = time.time()
-                up_conn.execute(f"CREATE SNAPSHOT `{newsnap}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}`"); up_conn.commit(); snapshot_created = True
                 try:
-                    up_conn.execute(f"data branch create table `{u_cfg['db']}`.`{t_cn}` from `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{newsnap}'}}"); up_conn.commit()
+                    up_conn.execute(f"data branch create table `{u_cfg['db']}`.`{t_cn}` from `{u_cfg['db']}`.`{u_cfg['table']}`{{MO_TS = {new_mo_ts}}}"); up_conn.commit()
                     dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{t_cn}` against `{u_cfg['db']}`.`{t_zero}` output file 'stage://{stage_name}'")
                 finally:
                     up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cn}`"); up_conn.commit()
@@ -647,7 +803,7 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False, retur
                         f, sl, qt = get_diff_file_path(r), chr(92), chr(34)
                         if not f: continue
                         ds_conn.execute(f"LOAD DATA INFILE '{f}' INTO TABLE `{d_cfg['db']}`.`{d_cfg['table']}` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '{qt}' ESCAPED BY '{sl}{sl}' LINES TERMINATED BY '{sl}n' PARALLEL 'TRUE'")
-                    ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, newsnap)); ds_conn.commit(); sync_success = True
+                    ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, new_mo_ts)); ds_conn.commit(); sync_success = True
                 except Exception as e:
                     ds_conn.rollback(); raise e
                 finally:
@@ -658,11 +814,10 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False, retur
                 t_cn = f"{u_cfg['table']}_copy_now"
                 up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cp}`"); up_conn.commit()
                 up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cn}`"); up_conn.commit()
-                up_conn.execute(f"data branch create table `{u_cfg['db']}`.`{t_cp}` from `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{lastgood}'}}"); up_conn.commit()
+                up_conn.execute(f"data branch create table `{u_cfg['db']}`.`{t_cp}` from `{u_cfg['db']}`.`{u_cfg['table']}`{{MO_TS = {lastgood}}}"); up_conn.commit()
                 diff_start = time.time()
-                up_conn.execute(f"CREATE SNAPSHOT `{newsnap}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}`"); up_conn.commit(); snapshot_created = True
                 try:
-                    up_conn.execute(f"data branch create table `{u_cfg['db']}`.`{t_cn}` from `{u_cfg['db']}`.`{u_cfg['table']}`{{snapshot='{newsnap}'}}"); up_conn.commit()
+                    up_conn.execute(f"data branch create table `{u_cfg['db']}`.`{t_cn}` from `{u_cfg['db']}`.`{u_cfg['table']}`{{MO_TS = {new_mo_ts}}}"); up_conn.commit()
                     dfiles = up_conn.query(f"data branch diff `{u_cfg['db']}`.`{t_cn}` against `{u_cfg['db']}`.`{t_cp}` output file 'stage://{stage_name}'")
                 finally:
                     up_conn.execute(f"DROP TABLE IF EXISTS `{u_cfg['db']}`.`{t_cn}`"); up_conn.commit()
@@ -691,7 +846,7 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False, retur
                         ds_conn.rollback()
                         sync_noop = True
                     else:
-                        ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, newsnap)); ds_conn.commit(); sync_success = True
+                        ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, new_mo_ts)); ds_conn.commit(); sync_success = True
                 except Exception as e:
                     ds_conn.rollback(); raise e
                 finally:
@@ -699,43 +854,33 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False, retur
         
         if sync_noop:
             sync_status = "NOOP"
-            log.info(f"[yellow]Sync NOOP | {newsnap}[/yellow]")
+            log.info(f"[yellow]Sync NOOP | {new_mo_ts}[/yellow]")
             cleanup_start = time.time()
             for r in dfiles:
                 try:
                     f = get_diff_file_path(r)
-                    if f: up_conn.execute(f"REMOVE '{f}'"); up_conn.commit()
-                except: pass
-            if snapshot_created:
-                try: up_conn.execute(f"DROP SNAPSHOT IF EXISTS `{newsnap}`"); up_conn.commit()
+                    if f: up_conn.execute(f"REMOVE FILES FROM STAGE IF EXISTS '{f}'"); up_conn.commit()
                 except: pass
             record_timing(timings, "cleanup", cleanup_start)
             return sync_return(True)
         if sync_success:
             sync_status = "SUCCESS"
-            log.info(f"[green]Sync SUCCESS | {newsnap}[/green]")
+            log.info(f"[green]Sync SUCCESS | {new_mo_ts}[/green]")
             cleanup_start = time.time()
             for r in dfiles:
                 try:
                     f = get_diff_file_path(r)
-                    if f: up_conn.execute(f"REMOVE '{f}'"); up_conn.commit()
+                    if f: up_conn.execute(f"REMOVE FILES FROM STAGE IF EXISTS '{f}'"); up_conn.commit()
                 except: pass
             allw = get_watermarks(ds_conn, tid)
             if len(allw) > MAX_WATERMARKS:
                 for w in allw[MAX_WATERMARKS:]:
                     ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s AND watermark=%s", (tid, w)); ds_conn.commit()
-                    try: up_conn.execute(f"DROP SNAPSHOT IF EXISTS `{w}`"); up_conn.commit()
-                    except: pass
             record_timing(timings, "cleanup", cleanup_start)
             return sync_return(True)
         return sync_return(False)
     except Exception as e:
         log.error(f"Sync FAILED: {e}")
-        if snapshot_created:
-            cleanup_start = time.time()
-            try: up_conn.execute(f"DROP SNAPSHOT IF EXISTS `{newsnap}`"); up_conn.commit()
-            except: pass
-            record_timing(timings, "cleanup", cleanup_start)
         return sync_return(False)
     finally:
         elapsed = time.time() - start_ts
@@ -793,22 +938,20 @@ def sync_loop(config, interval):
                             if ws:
                                 if force_full:
                                     log.info(f"Verify forced by interval={v_int}")
-                                elif not is_small_table(up, config, snap=ws[0]):
+                                elif not is_small_table(up, config, mo_ts=ws[0]):
                                     log.info("Skip verify check due to table is too big.")
                                     up.close(); ds.close()
                                     time.sleep(interval)
                                     continue
                                 verify_start = time.time()
                                 ok, ur, dr, _, _, u_time, d_time = verify_consistency(up, ds, config, ws[0], mode="full", return_detail=True)
-                                log_verify_result(ok, ur, dr, mode="FULL", snapshot_label=ws[0])
+                                log_verify_result(ok, ur, dr, mode="FULL", mo_ts_label=ws[0])
                                 verify_elapsed = time.time() - verify_start
                                 u_dur = u_time or 0.0
                                 d_dur = d_time or 0.0
-                                log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode=FULL snapshot={ws[0]}")
+                                log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode=FULL mo_ts={ws[0]}")
                                 if not ok:
                                     log.warning("Consistency check FAILED; please investigate.")
-                                else:
-                                    cleanup_snapshots_after_verify(up, ds, config, ws[0])
                                 last_verify = f"{time.strftime('%Y-%m-%d %H:%M:%S')} (FULL)"
                             up.close(); ds.close()
                 time.sleep(interval)
@@ -852,34 +995,42 @@ def main():
                 continue
             tid = get_task_id(config)
             ensure_meta_table(ds_meta)
-            snaps = get_watermarks(ds_meta, tid)[:MAX_WATERMARKS]
+            raw_snaps = get_watermarks(ds_meta, tid)[:MAX_WATERMARKS]
             ds_meta.close()
-            latest_label = "Latest upstream (no snapshot)"
-            choices = snaps + [latest_label]
-            chosen = questionary.select("Verify snapshot:", choices=choices).ask()
+            labels = []
+            label_map = {}
+            for w in raw_snaps:
+                utc = format_mo_ts_utc(w) or "Invalid UTC"
+                label = f"{w} ({utc})"
+                labels.append(label)
+                label_map[label] = int(w)
+            latest_label = "Latest upstream (no MO_TS)"
+            choices = labels + [latest_label]
+            chosen = questionary.select("Verify MO_TS:", choices=choices).ask()
             if chosen is None:
                 continue
-            snap = None
-            snap_label = "LATEST"
+            mo_ts = None
+            mo_ts_label = "LATEST"
             if chosen != latest_label:
-                snap = chosen
-                snap_label = chosen
+                if chosen not in label_map:
+                    log.warning(f"Invalid MO_TS: {chosen}")
+                    continue
+                mo_ts = label_map[chosen]
+                mo_ts_label = str(mo_ts)
             def do_verify():
                 up, ds = DBConnection(config["upstream"], "Up", autocommit=True), DBConnection(config["downstream"], "Ds", autocommit=True)
                 ok, ur, dr, detail, u_time, d_time = False, None, None, None, None, None
                 if up.connect() and ds.connect():
-                    ok, ur, dr, detail, _, u_time, d_time = verify_consistency(up, ds, config, snap, mode="full", return_detail=True)
-                    if ok:
-                        cleanup_snapshots_after_verify(up, ds, config, snap)
+                    ok, ur, dr, detail, _, u_time, d_time = verify_consistency(up, ds, config, mo_ts, mode="full", return_detail=True)
                 up.close(); ds.close()
                 return ok, ur, dr, detail, u_time, d_time
             verify_start = time.time()
             ok, ur, dr, detail, u_time, d_time = run_with_activity_indicator("Verify Consistency", do_verify, config, last_sync, last_verify, last_error)
-            log_verify_result(ok, ur, dr, mode="FULL", snapshot_label=snap_label)
+            log_verify_result(ok, ur, dr, mode="FULL", mo_ts_label=mo_ts_label)
             verify_elapsed = time.time() - verify_start
             u_dur = u_time or 0.0
             d_dur = d_time or 0.0
-            log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode=FULL snapshot={snap_label}")
+            log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode=FULL mo_ts={mo_ts_label}")
             last_verify = f"{time.strftime('%Y-%m-%d %H:%M:%S')} (FULL)"
             if not ok:
                 last_error = "Verify failed"
@@ -911,7 +1062,9 @@ def main():
             config["sync_interval"] = interval; save_config(config); sync_loop(config, interval)
 
 def setup_config(existing=None):
-    w = existing if existing else {"upstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db1", "table": "t1"}, "downstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db2", "table": "t2"}, "stage": {"name": "s1"}, "sync_interval": 60, "verify_interval": 50, "verify_columns": []}
+    w = existing if existing else {"upstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db1", "table": "t1"}, "downstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db2", "table": "t2"}, "stage": {"name": "s1"}, "sync_interval": 60, "verify_interval": 50, "verify_columns": [], "pitr": {}}
+    if "pitr" not in w:
+        w["pitr"] = {}
     def text_default(value):
         return "" if value is None else str(value)
     def ask_text(prompt, default, secret=False):
@@ -923,12 +1076,24 @@ def setup_config(existing=None):
     while True:
         verify_cols = w.get("verify_columns", [])
         verify_cols_text = ",".join(verify_cols) if verify_cols else ""
-        table = Table(title="Config"); table.add_row("Up", f"{w['upstream']['db']}.{w['upstream']['table']}"); table.add_row("Ds", f"{w['downstream']['db']}.{w['downstream']['table']}"); table.add_row("Verify", str(w.get('verify_interval'))); table.add_row("Fast Columns", verify_cols_text); console.print(table)
-        c = questionary.select("Action:", choices=["Edit Upstream", "Edit Downstream", "Edit Stage", "Edit Verify Interval", "Edit Fast Verify Columns", "Save", "Discard"]).ask()
+        pitr_cfg = w.get("pitr") or {}
+        if pitr_cfg.get("name"):
+            length = pitr_cfg.get("length")
+            unit = pitr_cfg.get("unit")
+            range_label = f"{length}{unit}" if length is not None and unit else ""
+            if range_label:
+                pitr_label = f"{pitr_cfg.get('name')} ({pitr_cfg.get('level')}, {range_label})"
+            else:
+                pitr_label = f"{pitr_cfg.get('name')} ({pitr_cfg.get('level')})"
+        else:
+            pitr_label = "Not set"
+        table = Table(title="Config"); table.add_row("Up", f"{w['upstream']['db']}.{w['upstream']['table']}"); table.add_row("Ds", f"{w['downstream']['db']}.{w['downstream']['table']}"); table.add_row("PITR", pitr_label); table.add_row("Verify", str(w.get('verify_interval'))); table.add_row("Fast Columns", verify_cols_text); console.print(table)
+        c = questionary.select("Action:", choices=["Edit Upstream", "Edit Downstream", "Edit Stage", "Edit PITR", "Edit Verify Interval", "Edit Fast Verify Columns", "Save", "Discard"]).ask()
         if c == "Save": save_config(w); return w
         if c == "Edit Upstream": w["upstream"] = {"host": ask_text("Host:", text_default(w["upstream"].get("host"))), "port": ask_text("Port:", text_default(w["upstream"].get("port"))), "user": ask_text("User:", text_default(w["upstream"].get("user"))), "password": ask_text("Pass:", text_default(w["upstream"].get("password")), secret=True), "db": ask_text("DB:", text_default(w["upstream"].get("db"))), "table": ask_text("Table:", text_default(w["upstream"].get("table")))}
         if c == "Edit Downstream": w["downstream"] = {"host": ask_text("Host:", text_default(w["downstream"].get("host"))), "port": ask_text("Port:", text_default(w["downstream"].get("port"))), "user": ask_text("User:", text_default(w["downstream"].get("user"))), "password": ask_text("Pass:", text_default(w["downstream"].get("password")), secret=True), "db": ask_text("DB:", text_default(w["downstream"].get("db"))), "table": ask_text("Table:", text_default(w["downstream"].get("table")))}
         if c == "Edit Stage": w["stage"] = {"name": ask_text("Stage Name:", text_default(w.get("stage", {}).get("name")))}
+        if c == "Edit PITR": w["pitr"] = configure_pitr(w)
         if c == "Edit Verify Interval":
             val = questionary.text("Interval:", default=text_default(w.get("verify_interval", 50))).ask()
             if val is None:
