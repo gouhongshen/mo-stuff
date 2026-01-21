@@ -5,19 +5,27 @@
         "user": "dump",
         "password": "111",
         "db": "tpcc",
-        "table": "bmsql_district"
+        "table": "bmsql_stock"
     },
     "downstream": {
-        "host": "freetier-01.cn-hangzhou.cluster.cn-dev.matrixone.tech",
+        "host": "127.0.0.1",
         "port": "6001",
-        "user": "acc1:root1",
+        "user": "dump",
         "password": "111",
         "db": "tpcc_ds",
-        "table": "bmsql_district"
+        "table": "bmsql_stock"
     },
     "stage": {
         "name": "stage02"
     },
-    "sync_interval": 30,
-    "verify_columns": []
+    "sync_interval": 20,
+    "verify_columns": [],
+    "pitr": {
+        "name": "pitr_tpcc_db_260121134003",
+        "level": "database",
+        "obj_id": 510601,
+        "length": 7,
+        "unit": "d"
+    },
+    "sync_scope": "database"
 }

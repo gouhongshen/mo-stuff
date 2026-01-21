@@ -77,9 +77,23 @@ def load_config(path=None):
 def save_config(config, path=None):
     cfg_path = path or CONFIG_FILE
     with open(cfg_path, "w") as f: json.dump(config, f, indent=4)
+def get_sync_scope(config):
+    scope = (config.get("sync_scope") or "table").lower()
+    return "database" if scope == "database" else "table"
+
 def get_task_id(config):
     u, d = config["upstream"], config["downstream"]
+    if get_sync_scope(config) == "database":
+        return f"{u['host']}_{u['port']}_{u['db']}_to_{d['host']}_{d['port']}_{d['db']}".replace(".", "_")
     return f"{u['host']}_{u['port']}_{u['db']}_{u['table']}_to_{d['host']}_{d['port']}_{d['db']}_{d['table']}".replace(".", "_")
+
+def with_table_config(config, table):
+    cfg = dict(config)
+    cfg["upstream"] = dict(config["upstream"])
+    cfg["downstream"] = dict(config["downstream"])
+    cfg["upstream"]["table"] = table
+    cfg["downstream"]["table"] = table
+    return cfg
 
 def ensure_meta_table(ds_conn):
     ds_conn.execute(f"CREATE DATABASE IF NOT EXISTS `{META_DB}`"); ds_conn.commit()
@@ -147,6 +161,13 @@ def get_watermarks(ds_conn, tid):
             continue
     return out
 
+def prune_watermarks(ds_conn, tid, max_keep=MAX_WATERMARKS):
+    allw = get_watermarks(ds_conn, tid)
+    if len(allw) <= max_keep:
+        return
+    for w in allw[max_keep:]:
+        ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s AND watermark=%s", (tid, w)); ds_conn.commit()
+
 def get_table_id(up_conn, db, table):
     queries = [
         ("SELECT rel_id FROM mo_catalog.mo_tables WHERE relname=%s AND reldatabase=%s AND account_id = current_account_id()", (table, db)),
@@ -175,25 +196,24 @@ def get_database_id(up_conn, db):
             return int(r["dat_id"])
     return None
 
-def list_active_pitr(up_conn, table_id, db_id):
-    clauses, args = [], []
-    if table_id is not None:
-        clauses.append("(level = 'table' AND obj_id = %s)")
-        args.append(table_id)
-    if db_id is not None:
-        clauses.append("(level = 'database' AND obj_id = %s)")
-        args.append(db_id)
-    if not clauses:
+def resolve_pitr_target(up_conn, config):
+    scope = get_sync_scope(config)
+    u_cfg = config["upstream"]
+    if scope == "database":
+        return "database", get_database_id(up_conn, u_cfg["db"])
+    return "table", get_table_id(up_conn, u_cfg["db"], u_cfg["table"])
+
+def list_active_pitr(up_conn, level, obj_id):
+    if not level or obj_id is None:
         return []
-    where = " OR ".join(clauses)
     sql = (
         "SELECT pitr_name, level, obj_id, pitr_length, pitr_unit "
         "FROM mo_catalog.mo_pitr "
-        "WHERE pitr_status = 1 AND create_account = current_account_id() AND (" + where + ") "
+        "WHERE pitr_status = 1 AND create_account = current_account_id() AND level = %s AND obj_id = %s "
         "ORDER BY modified_time DESC"
     )
     try:
-        return up_conn.query(sql, tuple(args))
+        return up_conn.query(sql, (level, obj_id))
     except:
         return []
 
@@ -221,8 +241,9 @@ def format_pitr_label(pitr):
         range_str = f", range={length}{unit}"
     return f"{name} (level={level}{range_str})"
 
-def generate_pitr_name(db, table):
-    base = f"pitr_{db}_{table}_{datetime.now().strftime('%y%m%d%H%M%S')}"
+def generate_pitr_name(db, table=None):
+    suffix = table if table else "db"
+    base = f"pitr_{db}_{suffix}_{datetime.now().strftime('%y%m%d%H%M%S')}"
     return re.sub(r"[^a-zA-Z0-9_]", "_", base)
 
 def lock_is_held(ds_conn, tid):
@@ -264,6 +285,19 @@ def get_diff_file_path(row):
         if key in row:
             return row[key]
     return next(iter(row.values()))
+
+class IncrementalFallback(Exception):
+    pass
+
+def remove_stage_files(up_conn, dfiles):
+    for r in dfiles:
+        f = None
+        try:
+            f = get_diff_file_path(r)
+            if f:
+                up_conn.execute(f"REMOVE FILES FROM STAGE IF EXISTS '{f}'"); up_conn.commit()
+        except Exception as e:
+            log.warning(f"Remove stage file failed: {f}: {e}")
 
 def split_sql_statements(sql_text):
     stmts, buf = [], []
@@ -503,24 +537,29 @@ def format_mo_ts_utc(mo_ts):
     frac_str = f"{frac:09d}"[:7]
     return f"{dt.strftime('%Y-%m-%d %H:%M:%S')}.{frac_str} UTC"
 
-def log_verify_result(ok, ur, dr, mode="FAST", detail=None, mo_ts_label=None):
+def log_verify_result(ok, ur, dr, mode="FAST", detail=None, mo_ts_label=None, table_label=None):
+    table_info = f" table={table_label}" if table_label else ""
     snap_info = f" mo_ts={mo_ts_label}" if mo_ts_label else ""
     detail_info = f" type={detail}" if detail and mode == "FAST" else ""
     if ok and ur:
-        log.info(f"[green]{mode} VERIFY PASSED[/green]{detail_info} upstream rows={ur['c']} hash={format_check_value(ur['h'])}{snap_info}")
+        log.info(f"[green]{mode} VERIFY PASSED[/green]{detail_info} upstream rows={ur['c']} hash={format_check_value(ur['h'])}{table_info}{snap_info}")
         return
     u_cnt = ur['c'] if ur else "N/A"
     u_hash = format_check_value(ur['h']) if ur else "N/A"
     d_cnt = dr['c'] if dr else "N/A"
     d_hash = format_check_value(dr['h']) if dr else "N/A"
-    log.error(f"[red]{mode} VERIFY FAILED[/red]{detail_info} upstream rows={u_cnt} hash={u_hash} downstream rows={d_cnt} hash={d_hash}{snap_info}")
+    log.error(f"[red]{mode} VERIFY FAILED[/red]{detail_info} upstream rows={u_cnt} hash={u_hash} downstream rows={d_cnt} hash={d_hash}{table_info}{snap_info}")
 
 def build_status_panel(config, last_sync=None, last_verify=None, last_error=None):
     up = config.get("upstream", {})
     ds = config.get("downstream", {})
+    scope = get_sync_scope(config)
+    up_table = "*" if scope == "database" else up.get("table")
+    ds_table = "*" if scope == "database" else ds.get("table")
     tbl = Table.grid(padding=(0, 1))
-    tbl.add_row("Up", f"{up.get('db')}.{up.get('table')}")
-    tbl.add_row("Ds", f"{ds.get('db')}.{ds.get('table')}")
+    tbl.add_row("Scope", config.get("sync_scope", "table"))
+    tbl.add_row("Up", f"{up.get('db')}.{up_table}")
+    tbl.add_row("Ds", f"{ds.get('db')}.{ds_table}")
     if last_sync:
         tbl.add_row("Last Sync", last_sync)
     if last_verify:
@@ -592,15 +631,20 @@ def validate_pitr_config(up_conn, config):
     name = pitr_cfg.get("name")
     if not name:
         return False, "PITR not configured"
+    expected_level, expected_obj = resolve_pitr_target(up_conn, config)
+    if expected_obj is None:
+        return False, "PITR target not found"
     rec = get_pitr_record(up_conn, name)
     if not rec:
         return False, f"PITR {name} not found"
     status = rec.get("pitr_status")
     if status is not None and str(status) != "1":
         return False, f"PITR {name} inactive"
-    cfg_obj = pitr_cfg.get("obj_id")
     rec_obj = rec.get("obj_id")
-    if cfg_obj is not None and rec_obj is not None and int(cfg_obj) != int(rec_obj):
+    rec_level = rec.get("level")
+    if rec_level and rec_level != expected_level:
+        return False, f"PITR {name} level mismatch"
+    if rec_obj is not None and int(rec_obj) != int(expected_obj):
         return False, f"PITR {name} obj_id mismatch"
     return True, None
 
@@ -610,13 +654,12 @@ def configure_pitr(config):
     if not up_conn.connect(db_override=""):
         log.error("Upstream connection failed; cannot configure PITR.")
         return config.get("pitr")
-    table_id = get_table_id(up_conn, u_cfg["db"], u_cfg["table"])
-    db_id = get_database_id(up_conn, u_cfg["db"])
-    if table_id is None or db_id is None:
+    level, obj_id = resolve_pitr_target(up_conn, config)
+    if obj_id is None:
         log.error("Resolve object id failed; cannot configure PITR.")
         up_conn.close()
         return config.get("pitr")
-    pitr_list = list_active_pitr(up_conn, table_id, db_id)
+    pitr_list = list_active_pitr(up_conn, level, obj_id)
     choices = ["Create new PITR"]
     choice_map = {}
     for p in pitr_list:
@@ -647,7 +690,7 @@ def configure_pitr(config):
         return questionary.select("PITR range unit:", choices=["h", "d", "mo", "y"], default=default_unit).ask()
 
     if chosen == "Create new PITR":
-        name_default = generate_pitr_name(u_cfg["db"], u_cfg["table"])
+        name_default = generate_pitr_name(u_cfg["db"], u_cfg["table"] if level == "table" else None)
         name = questionary.text("PITR name:", default=name_default).ask()
         if name is None:
             up_conn.close()
@@ -661,12 +704,15 @@ def configure_pitr(config):
             up_conn.close()
             return config.get("pitr")
         try:
-            up_conn.execute(f"CREATE PITR `{name}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}` RANGE {length} '{unit}'"); up_conn.commit()
+            if level == "database":
+                up_conn.execute(f"CREATE PITR `{name}` FOR DATABASE `{u_cfg['db']}` RANGE {length} '{unit}'"); up_conn.commit()
+            else:
+                up_conn.execute(f"CREATE PITR `{name}` FOR TABLE `{u_cfg['db']}` `{u_cfg['table']}` RANGE {length} '{unit}'"); up_conn.commit()
         except Exception as e:
             log.error(f"Create PITR failed: {e}")
             up_conn.close()
             return config.get("pitr")
-        pitr_cfg = {"name": name, "level": "table", "obj_id": table_id, "length": length, "unit": unit}
+        pitr_cfg = {"name": name, "level": level, "obj_id": obj_id, "length": length, "unit": unit}
     else:
         p = choice_map.get(chosen) or {}
         name = p.get("pitr_name")
@@ -686,12 +732,271 @@ def configure_pitr(config):
             log.error(f"Alter PITR failed: {e}")
             up_conn.close()
             return config.get("pitr")
-        pitr_cfg = {"name": name, "level": p.get("level"), "obj_id": p.get("obj_id"), "length": length, "unit": unit}
+        pitr_cfg = {"name": name, "level": p.get("level") or level, "obj_id": p.get("obj_id") or obj_id, "length": length, "unit": unit}
 
     up_conn.close()
     return pitr_cfg
 
+def list_database_tables(up_conn, db):
+    try:
+        rows = up_conn.query(f"SHOW TABLES FROM `{db}`")
+    except Exception as e:
+        log.error(f"Show tables failed: {db}: {e}")
+        return []
+    out = []
+    tmp_suffixes = ("_copy_now", "_copy_prev", "_zero")
+    for r in rows:
+        if not r:
+            continue
+        name = next(iter(r.values()))
+        if not name:
+            continue
+        name = str(name)
+        if any(name.endswith(suf) for suf in tmp_suffixes):
+            continue
+        out.append(name)
+    return out
+
+def ensure_downstream_table(ds_conn, up_conn, u_db, u_table, d_db, d_table):
+    target_exists = ds_conn.query(f"SHOW TABLES LIKE '{d_table}'")
+    if target_exists:
+        return
+    ddl = up_conn.fetch_one(f"SHOW CREATE TABLE `{u_db}`.`{u_table}`")['Create Table']
+    ddl = ddl.replace(f"`{u_table}`", f"`{d_table}`", 1)
+    ds_conn.execute(ddl); ds_conn.commit()
+
+def build_full_diff_files(up_conn, u_db, u_table, stage_name, new_mo_ts):
+    t_zero = f"{u_table}_zero"
+    t_cn = f"{u_table}_copy_now"
+    up_conn.execute(f"DROP TABLE IF EXISTS `{u_db}`.`{t_zero}`"); up_conn.commit()
+    up_conn.execute(f"DROP TABLE IF EXISTS `{u_db}`.`{t_cn}`"); up_conn.commit()
+    up_conn.execute(f"CREATE TABLE `{u_db}`.`{t_zero}` LIKE `{u_db}`.`{u_table}`"); up_conn.commit()
+    try:
+        up_conn.execute(f"data branch create table `{u_db}`.`{t_cn}` from `{u_db}`.`{u_table}`{{MO_TS = {new_mo_ts}}}"); up_conn.commit()
+        return up_conn.query(f"data branch diff `{u_db}`.`{t_cn}` against `{u_db}`.`{t_zero}` output file 'stage://{stage_name}'")
+    finally:
+        up_conn.execute(f"DROP TABLE IF EXISTS `{u_db}`.`{t_cn}`"); up_conn.commit()
+        up_conn.execute(f"DROP TABLE IF EXISTS `{u_db}`.`{t_zero}`"); up_conn.commit()
+
+def build_incremental_diff_files(up_conn, u_db, u_table, stage_name, lastgood, new_mo_ts):
+    t_cp = f"{u_table}_copy_prev"
+    t_cn = f"{u_table}_copy_now"
+    up_conn.execute(f"DROP TABLE IF EXISTS `{u_db}`.`{t_cp}`"); up_conn.commit()
+    up_conn.execute(f"DROP TABLE IF EXISTS `{u_db}`.`{t_cn}`"); up_conn.commit()
+    try:
+        up_conn.execute(f"data branch create table `{u_db}`.`{t_cp}` from `{u_db}`.`{u_table}`{{MO_TS = {lastgood}}}"); up_conn.commit()
+        up_conn.execute(f"data branch create table `{u_db}`.`{t_cn}` from `{u_db}`.`{u_table}`{{MO_TS = {new_mo_ts}}}"); up_conn.commit()
+        return up_conn.query(f"data branch diff `{u_db}`.`{t_cn}` against `{u_db}`.`{t_cp}` output file 'stage://{stage_name}'")
+    except Exception as e:
+        raise IncrementalFallback(str(e))
+    finally:
+        up_conn.execute(f"DROP TABLE IF EXISTS `{u_db}`.`{t_cn}`"); up_conn.commit()
+        up_conn.execute(f"DROP TABLE IF EXISTS `{u_db}`.`{t_cp}`"); up_conn.commit()
+
+def apply_full_diff(ds_conn, d_db, d_table, dfiles):
+    ds_conn.execute(f"TRUNCATE TABLE `{d_db}`.`{d_table}`")
+    for r in dfiles:
+        f, sl, qt = get_diff_file_path(r), chr(92), chr(34)
+        if not f:
+            continue
+        ds_conn.execute(f"LOAD DATA INFILE '{f}' INTO TABLE `{d_db}`.`{d_table}` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '{qt}' ESCAPED BY '{sl}{sl}' LINES TERMINATED BY '{sl}n' PARALLEL 'TRUE'")
+
+def apply_incremental_diff(up_conn, ds_conn, d_db, d_table, dfiles):
+    applied_stmt_count = 0
+    target = f"`{d_db}`.`{d_table}`"
+    rewrite = re.compile(r'(delete\s+from\s+|replace\s+into\s+|insert\s+into\s+|update\s+)(/\*.*?\*/\s+)?([`\w]+\.[`\w]+|[`\w]+)', re.I|re.S)
+    for r in dfiles:
+        f = get_diff_file_path(r)
+        if not f:
+            continue
+        raw = up_conn.fetch_one("select load_file(cast(%s as datalink)) as c", (f,))['c']
+        if raw is None:
+            log.error(f"Load diff file failed: {f}")
+            raise RuntimeError(f"load_file returned NULL: {f}")
+        stmt_str = raw.decode('utf-8') if isinstance(raw, bytes) else raw
+        sql = rewrite.sub(lambda m: f"{m.group(1)}{m.group(2) or ''} {target} ", stmt_str)
+        for s in split_sql_statements(sql):
+            s_strip = s.strip()
+            if not s_strip:
+                continue
+            if re.match(r"^(BEGIN|COMMIT|ROLLBACK|START\s+TRANSACTION)\b", s_strip, re.I):
+                continue
+            ds_conn.execute(s_strip)
+            applied_stmt_count += 1
+    return applied_stmt_count
+
+def sync_database_table(up_conn, ds_conn, u_db, u_table, d_db, stage_name, lastgood, new_mo_ts):
+    d_table = u_table
+    if lastgood:
+        try:
+            dfiles = build_incremental_diff_files(up_conn, u_db, u_table, stage_name, lastgood, new_mo_ts)
+            mode = "INCREMENTAL"
+        except IncrementalFallback as e:
+            log.warning(f"Incremental failed {u_db}.{u_table}: {e}; fallback to FULL.")
+            dfiles = build_full_diff_files(up_conn, u_db, u_table, stage_name, new_mo_ts)
+            mode = "FULL"
+    else:
+        dfiles = build_full_diff_files(up_conn, u_db, u_table, stage_name, new_mo_ts)
+        mode = "FULL"
+
+    if mode == "FULL":
+        apply_full_diff(ds_conn, d_db, d_table, dfiles)
+        applied_stmt_count = None
+    else:
+        applied_stmt_count = apply_incremental_diff(up_conn, ds_conn, d_db, d_table, dfiles)
+    return mode, dfiles, applied_stmt_count
+
+def perform_db_sync(config, is_auto=False, lock_held=False, force_full=False, return_detail=False):
+    start_ts = time.time()
+    diff_elapsed = 0.0
+    apply_elapsed = 0.0
+    timings = []
+    sync_success = False
+    sync_status = "FAILED"
+    sync_kind = "UNKNOWN"
+    u_cfg, d_cfg = config["upstream"], config["downstream"]
+    tid = get_task_id(config)
+    up_conn, ds_conn = DBConnection(u_cfg, "Up", autocommit=True), DBConnection(d_cfg, "Ds")
+    keeper = LockKeeper(d_cfg, tid)
+    new_mo_ts = None
+
+    def sync_return(ok):
+        if return_detail:
+            return ok, sync_kind, sync_status
+        return ok
+
+    try:
+        precheck_start = time.time()
+        if not up_conn.connect() or not ds_conn.connect(db_override=""):
+            log.error("Sync FAILED: connection failed")
+            return sync_return(False)
+        ds_conn.execute(f"CREATE DATABASE IF NOT EXISTS `{d_cfg['db']}`"); ds_conn.commit()
+        ensure_meta_table(ds_conn)
+        ds_conn.execute(f"USE `{d_cfg['db']}`"); ds_conn.commit()
+        ok, err = validate_pitr_config(up_conn, config)
+        if not ok:
+            log.error(f"Sync FAILED: {err}")
+            return sync_return(False)
+        if lock_held:
+            if not lock_is_held(ds_conn, tid):
+                log.warning("Lock lost before sync, skipping this cycle.")
+                return sync_return(False)
+        else:
+            if not acquire_lock(ds_conn, tid):
+                return sync_return(False)
+            keeper.start()
+
+        tables = list_database_tables(up_conn, u_cfg["db"])
+        if not tables:
+            log.warning("No tables found for database sync.")
+            return sync_return(False)
+        for t in tables:
+            ensure_downstream_table(ds_conn, up_conn, u_cfg["db"], t, d_cfg["db"], t)
+        record_timing(timings, "precheck", precheck_start)
+
+        watermark_start = time.time()
+        ws = get_watermarks(ds_conn, tid)
+        lastgood = ws[0] if ws else None
+        if force_full:
+            lastgood = None
+        if lastgood is not None:
+            try:
+                lastgood = int(lastgood)
+            except (TypeError, ValueError):
+                log.warning(f"Invalid watermark {lastgood}. Resetting to FULL sync.")
+                ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s", (tid,)); ds_conn.commit()
+                lastgood = None
+        record_timing(timings, "watermark", watermark_start)
+
+        stage_start = time.time()
+        stage_name, stage_url = get_stage_config(config)
+        if not stage_name:
+            log.error("Stage name is missing; check config.stage.name or config.stage.url.")
+            return sync_return(False)
+        if not ensure_stage(up_conn, stage_name, stage_url):
+            log.error("Stage setup failed; aborting sync.")
+            return sync_return(False)
+        record_timing(timings, "stage", stage_start)
+
+        sync_kind = "FULL" if not lastgood else "INCREMENTAL"
+        # Force a non-zero tail even if system clock resolution is coarse.
+        new_mo_ts = max(0, time.time_ns() - 1)
+        ds_conn.conn.begin()
+        try:
+            for t in tables:
+                diff_start = time.time()
+                try:
+                    mode, dfiles, applied_stmt_count = sync_database_table(
+                        up_conn, ds_conn, u_cfg["db"], t, d_cfg["db"], stage_name, lastgood, new_mo_ts
+                    )
+                except Exception as e:
+                    raise RuntimeError(f"Table sync failed: {u_cfg['db']}.{t}: {e}") from e
+                diff_elapsed += time.time() - diff_start
+                if mode == "INCREMENTAL":
+                    if applied_stmt_count == 0:
+                        log.info(f"[yellow]Apply diff done table={u_cfg['db']}.{t} mode=INCREMENTAL noop mo_ts={new_mo_ts}[/yellow]")
+                    else:
+                        log.info(f"[green]Apply diff done table={u_cfg['db']}.{t} mode=INCREMENTAL applied={applied_stmt_count} mo_ts={new_mo_ts}[/green]")
+                else:
+                    log.info(f"[green]Apply diff done table={u_cfg['db']}.{t} mode=FULL mo_ts={new_mo_ts}[/green]")
+                cleanup_start = time.time()
+                remove_stage_files(up_conn, dfiles)
+                record_timing(timings, "cleanup", cleanup_start)
+            apply_start = time.time()
+            ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, new_mo_ts))
+            ds_conn.commit()
+            apply_elapsed += time.time() - apply_start
+            sync_success = True
+        except Exception as e:
+            ds_conn.rollback()
+            raise e
+
+        if sync_success:
+            sync_status = "SUCCESS"
+            log.info(f"[green]Sync SUCCESS | {new_mo_ts}[/green]")
+            prune_watermarks(ds_conn, tid)
+            return sync_return(True)
+        return sync_return(False)
+    except KeyboardInterrupt:
+        try:
+            ds_conn.rollback()
+        except:
+            pass
+        log.info("Sync interrupted by user.")
+        raise
+    except KeyboardInterrupt:
+        try:
+            ds_conn.rollback()
+        except:
+            pass
+        log.info("Sync interrupted by user.")
+        raise
+    except Exception as e:
+        log.error(f"Sync FAILED: {e}")
+        return sync_return(False)
+    finally:
+        elapsed = time.time() - start_ts
+        log.info(f"Sync duration={diff_elapsed:.3f}/{apply_elapsed:.3f}/{elapsed:.3f}s status={sync_status}")
+        if diff_elapsed > 0:
+            timings.append(("diff", diff_elapsed))
+        if apply_elapsed > 0:
+            timings.append(("apply", apply_elapsed))
+        top3 = summarize_top_timings(timings)
+        if top3:
+            log.info(f"Sync timing top3={top3}")
+        log.info("-" * 72)
+        if keeper.is_alive():
+            keeper.stop(); keeper.join()
+        if not lock_held:
+            release_lock(ds_conn, tid)
+        up_conn.close(); ds_conn.close()
+
 def perform_sync(config, is_auto=False, lock_held=False, force_full=False, return_detail=False):
+    if get_sync_scope(config) == "database":
+        return perform_db_sync(config, is_auto=is_auto, lock_held=lock_held, force_full=force_full, return_detail=return_detail)
+    return perform_table_sync(config, is_auto=is_auto, lock_held=lock_held, force_full=force_full, return_detail=return_detail)
+
+def perform_table_sync(config, is_auto=False, lock_held=False, force_full=False, return_detail=False):
     start_ts = time.time()
     diff_elapsed = 0.0
     apply_elapsed = 0.0
@@ -827,21 +1132,7 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False, retur
                 apply_start = time.time()
                 ds_conn.conn.begin()
                 try:
-                    applied_stmt_count = 0
-                    for r in dfiles:
-                        f = get_diff_file_path(r)
-                        if not f: continue
-                        raw = up_conn.fetch_one("select load_file(cast(%s as datalink)) as c", (f,))['c']
-                        if raw is None:
-                            log.error(f"Load diff file failed: {f}")
-                            raise RuntimeError(f"load_file returned NULL: {f}")
-                        stmt_str = raw.decode('utf-8') if isinstance(raw, bytes) else raw
-                        target = f"`{d_cfg['db']}`.`{d_cfg['table']}`"
-                        sql = re.compile(r'(delete\s+from\s+|replace\s+into\s+|insert\s+into\s+|update\s+)(/\*.*?\*/\s+)?([`\w]+\.[`\w]+|[`\w]+)', re.I|re.S).sub(lambda m: f"{m.group(1)}{m.group(2) or ''} {target} ", stmt_str)
-                        for s in split_sql_statements(sql):
-                            if re.match(r"^(BEGIN|COMMIT|ROLLBACK|START\s+TRANSACTION)\b", s, re.I): continue
-                            ds_conn.execute(s)
-                            applied_stmt_count += 1
+                    applied_stmt_count = apply_incremental_diff(up_conn, ds_conn, d_cfg["db"], d_cfg["table"], dfiles)
                     if applied_stmt_count == 0:
                         ds_conn.rollback()
                         sync_noop = True
@@ -856,26 +1147,15 @@ def perform_sync(config, is_auto=False, lock_held=False, force_full=False, retur
             sync_status = "NOOP"
             log.info(f"[yellow]Sync NOOP | {new_mo_ts}[/yellow]")
             cleanup_start = time.time()
-            for r in dfiles:
-                try:
-                    f = get_diff_file_path(r)
-                    if f: up_conn.execute(f"REMOVE FILES FROM STAGE IF EXISTS '{f}'"); up_conn.commit()
-                except: pass
+            remove_stage_files(up_conn, dfiles)
             record_timing(timings, "cleanup", cleanup_start)
             return sync_return(True)
         if sync_success:
             sync_status = "SUCCESS"
             log.info(f"[green]Sync SUCCESS | {new_mo_ts}[/green]")
             cleanup_start = time.time()
-            for r in dfiles:
-                try:
-                    f = get_diff_file_path(r)
-                    if f: up_conn.execute(f"REMOVE FILES FROM STAGE IF EXISTS '{f}'"); up_conn.commit()
-                except: pass
-            allw = get_watermarks(ds_conn, tid)
-            if len(allw) > MAX_WATERMARKS:
-                for w in allw[MAX_WATERMARKS:]:
-                    ds_conn.execute(f"DELETE FROM `{META_DB}`.`{META_TABLE}` WHERE task_id=%s AND watermark=%s", (tid, w)); ds_conn.commit()
+            remove_stage_files(up_conn, dfiles)
+            prune_watermarks(ds_conn, tid)
             record_timing(timings, "cleanup", cleanup_start)
             return sync_return(True)
         return sync_return(False)
@@ -989,6 +1269,7 @@ def main():
         if c == "Exit": sys.exit(0)
         elif c == "Edit Configuration": config = setup_config(config)
         elif c == "Verify Consistency":
+            scope = get_sync_scope(config)
             ds_meta = DBConnection(config["downstream"], "DsMeta", autocommit=True)
             if not ds_meta.connect(db_override=""):
                 log.error("Downstream connection failed; cannot verify.")
@@ -1005,38 +1286,77 @@ def main():
                 labels.append(label)
                 label_map[label] = int(w)
             latest_label = "Latest upstream (no MO_TS)"
-            choices = labels + [latest_label]
-            chosen = questionary.select("Verify MO_TS:", choices=choices).ask()
-            if chosen is None:
-                continue
-            mo_ts = None
-            mo_ts_label = "LATEST"
-            if chosen != latest_label:
-                if chosen not in label_map:
-                    log.warning(f"Invalid MO_TS: {chosen}")
+            verify_tables = [config["upstream"]["table"]]
+            if scope == "database":
+                up_list = DBConnection(config["upstream"], "UpList", autocommit=True)
+                if not up_list.connect(db_override=""):
+                    log.error("Upstream connection failed; cannot list tables.")
                     continue
-                mo_ts = label_map[chosen]
-                mo_ts_label = str(mo_ts)
+                tables = list_database_tables(up_list, config["upstream"]["db"])
+                up_list.close()
+                if not tables:
+                    log.error("No tables found; cannot verify.")
+                    continue
+                while True:
+                    table_choice = questionary.select("Verify table:", choices=["Back", "All tables"] + tables).ask()
+                    if table_choice is None or table_choice == "Back":
+                        break
+                    verify_tables = tables if table_choice == "All tables" else [table_choice]
+                    choices = ["Back"] + labels + [latest_label]
+                    chosen = questionary.select("Verify MO_TS:", choices=choices).ask()
+                    if chosen is None or chosen == "Back":
+                        continue
+                    mo_ts = None
+                    mo_ts_label = "LATEST"
+                    if chosen != latest_label:
+                        if chosen not in label_map:
+                            log.warning(f"Invalid MO_TS: {chosen}")
+                            continue
+                        mo_ts = label_map[chosen]
+                        mo_ts_label = str(mo_ts)
+                    break
+                else:
+                    continue
+                if table_choice is None or table_choice == "Back":
+                    continue
+            else:
+                choices = ["Back"] + labels + [latest_label]
+                chosen = questionary.select("Verify MO_TS:", choices=choices).ask()
+                if chosen is None or chosen == "Back":
+                    continue
+                mo_ts = None
+                mo_ts_label = "LATEST"
+                if chosen != latest_label:
+                    if chosen not in label_map:
+                        log.warning(f"Invalid MO_TS: {chosen}")
+                        continue
+                    mo_ts = label_map[chosen]
+                    mo_ts_label = str(mo_ts)
             def do_verify():
-                up, ds = DBConnection(config["upstream"], "Up", autocommit=True), DBConnection(config["downstream"], "Ds", autocommit=True)
-                ok, ur, dr, detail, u_time, d_time = False, None, None, None, None, None
+                up = DBConnection(config["upstream"], "Up", autocommit=True)
+                ds = DBConnection(config["downstream"], "Ds", autocommit=True)
+                ok_all = True
                 if up.connect() and ds.connect():
-                    ok, ur, dr, detail, _, u_time, d_time = verify_consistency(up, ds, config, mo_ts, mode="full", return_detail=True)
+                    for t in verify_tables:
+                        t_cfg = with_table_config(config, t)
+                        v_start = time.time()
+                        ok, ur, dr, detail, _, u_time, d_time = verify_consistency(up, ds, t_cfg, mo_ts, mode="full", return_detail=True)
+                        log_verify_result(ok, ur, dr, mode="FULL", mo_ts_label=mo_ts_label, table_label=f"{t_cfg['upstream']['db']}.{t}")
+                        v_elapsed = time.time() - v_start
+                        u_dur = u_time or 0.0
+                        d_dur = d_time or 0.0
+                        log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{v_elapsed:.3f}s mode=FULL table={t_cfg['upstream']['db']}.{t} mo_ts={mo_ts_label}")
+                        if not ok:
+                            ok_all = False
                 up.close(); ds.close()
-                return ok, ur, dr, detail, u_time, d_time
-            verify_start = time.time()
-            ok, ur, dr, detail, u_time, d_time = run_with_activity_indicator("Verify Consistency", do_verify, config, last_sync, last_verify, last_error)
-            log_verify_result(ok, ur, dr, mode="FULL", mo_ts_label=mo_ts_label)
-            verify_elapsed = time.time() - verify_start
-            u_dur = u_time or 0.0
-            d_dur = d_time or 0.0
-            log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode=FULL mo_ts={mo_ts_label}")
+                return ok_all
+            ok_all = run_with_activity_indicator("Verify Consistency", do_verify, config, last_sync, last_verify, last_error)
             last_verify = f"{time.strftime('%Y-%m-%d %H:%M:%S')} (FULL)"
-            if not ok:
+            if not ok_all:
                 last_error = "Verify failed"
         elif c == "Manual Sync Now":
-            mode = questionary.select("Manual Sync Mode:", choices=["Incremental Sync", "Full Sync"]).ask()
-            if mode is None:
+            mode = questionary.select("Manual Sync Mode:", choices=["Back", "Incremental Sync", "Full Sync"]).ask()
+            if mode is None or mode == "Back":
                 continue
             force_full = mode == "Full Sync"
             ok = run_with_activity_indicator(
@@ -1051,8 +1371,10 @@ def main():
             if not ok:
                 last_error = "Sync failed"
         elif c == "Automatic Mode":
-            val = questionary.text("Interval (sec):", default=str(config.get("sync_interval", 60))).ask()
+            val = questionary.text("Interval (sec) (or 'back'):", default=str(config.get("sync_interval", 60))).ask()
             if val is None:
+                continue
+            if str(val).strip().lower() in ("back", "b"):
                 continue
             try:
                 interval = int(val)
@@ -1062,9 +1384,11 @@ def main():
             config["sync_interval"] = interval; save_config(config); sync_loop(config, interval)
 
 def setup_config(existing=None):
-    w = existing if existing else {"upstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db1", "table": "t1"}, "downstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db2", "table": "t2"}, "stage": {"name": "s1"}, "sync_interval": 60, "verify_interval": 50, "verify_columns": [], "pitr": {}}
+    w = existing if existing else {"upstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db1", "table": "t1"}, "downstream": {"host": "127.0.0.1", "port": "6001", "user": "dump", "password": "111", "db": "db2", "table": "t2"}, "stage": {"name": "s1"}, "sync_interval": 60, "verify_interval": 50, "verify_columns": [], "pitr": {}, "sync_scope": "table"}
     if "pitr" not in w:
         w["pitr"] = {}
+    if "sync_scope" not in w:
+        w["sync_scope"] = "table"
     def text_default(value):
         return "" if value is None else str(value)
     def ask_text(prompt, default, secret=False):
@@ -1076,6 +1400,7 @@ def setup_config(existing=None):
     while True:
         verify_cols = w.get("verify_columns", [])
         verify_cols_text = ",".join(verify_cols) if verify_cols else ""
+        scope = get_sync_scope(w)
         pitr_cfg = w.get("pitr") or {}
         if pitr_cfg.get("name"):
             length = pitr_cfg.get("length")
@@ -1087,11 +1412,29 @@ def setup_config(existing=None):
                 pitr_label = f"{pitr_cfg.get('name')} ({pitr_cfg.get('level')})"
         else:
             pitr_label = "Not set"
-        table = Table(title="Config"); table.add_row("Up", f"{w['upstream']['db']}.{w['upstream']['table']}"); table.add_row("Ds", f"{w['downstream']['db']}.{w['downstream']['table']}"); table.add_row("PITR", pitr_label); table.add_row("Verify", str(w.get('verify_interval'))); table.add_row("Fast Columns", verify_cols_text); console.print(table)
-        c = questionary.select("Action:", choices=["Edit Upstream", "Edit Downstream", "Edit Stage", "Edit PITR", "Edit Verify Interval", "Edit Fast Verify Columns", "Save", "Discard"]).ask()
+        scope_label = w.get("sync_scope", "table")
+        up_table = "*" if scope == "database" else w["upstream"]["table"]
+        ds_table = "*" if scope == "database" else w["downstream"]["table"]
+        table = Table(title="Config"); table.add_row("Scope", scope_label); table.add_row("Up", f"{w['upstream']['db']}.{up_table}"); table.add_row("Ds", f"{w['downstream']['db']}.{ds_table}"); table.add_row("PITR", pitr_label); table.add_row("Verify", str(w.get('verify_interval'))); table.add_row("Fast Columns", verify_cols_text); console.print(table)
+        c = questionary.select("Action:", choices=["Edit Sync Scope", "Edit Upstream", "Edit Downstream", "Edit Stage", "Edit PITR", "Edit Verify Interval", "Edit Fast Verify Columns", "Save", "Discard"]).ask()
         if c == "Save": save_config(w); return w
-        if c == "Edit Upstream": w["upstream"] = {"host": ask_text("Host:", text_default(w["upstream"].get("host"))), "port": ask_text("Port:", text_default(w["upstream"].get("port"))), "user": ask_text("User:", text_default(w["upstream"].get("user"))), "password": ask_text("Pass:", text_default(w["upstream"].get("password")), secret=True), "db": ask_text("DB:", text_default(w["upstream"].get("db"))), "table": ask_text("Table:", text_default(w["upstream"].get("table")))}
-        if c == "Edit Downstream": w["downstream"] = {"host": ask_text("Host:", text_default(w["downstream"].get("host"))), "port": ask_text("Port:", text_default(w["downstream"].get("port"))), "user": ask_text("User:", text_default(w["downstream"].get("user"))), "password": ask_text("Pass:", text_default(w["downstream"].get("password")), secret=True), "db": ask_text("DB:", text_default(w["downstream"].get("db"))), "table": ask_text("Table:", text_default(w["downstream"].get("table")))}
+        if c == "Edit Sync Scope":
+            val = questionary.select("Sync Scope:", choices=["table", "database"], default=w.get("sync_scope", "table")).ask()
+            if val is None:
+                continue
+            if val != w.get("sync_scope"):
+                w["sync_scope"] = val
+                w["pitr"] = {}
+        if c == "Edit Upstream":
+            if scope == "database":
+                w["upstream"] = {"host": ask_text("Host:", text_default(w["upstream"].get("host"))), "port": ask_text("Port:", text_default(w["upstream"].get("port"))), "user": ask_text("User:", text_default(w["upstream"].get("user"))), "password": ask_text("Pass:", text_default(w["upstream"].get("password")), secret=True), "db": ask_text("DB:", text_default(w["upstream"].get("db"))), "table": w["upstream"].get("table")}
+            else:
+                w["upstream"] = {"host": ask_text("Host:", text_default(w["upstream"].get("host"))), "port": ask_text("Port:", text_default(w["upstream"].get("port"))), "user": ask_text("User:", text_default(w["upstream"].get("user"))), "password": ask_text("Pass:", text_default(w["upstream"].get("password")), secret=True), "db": ask_text("DB:", text_default(w["upstream"].get("db"))), "table": ask_text("Table:", text_default(w["upstream"].get("table")))}
+        if c == "Edit Downstream":
+            if scope == "database":
+                w["downstream"] = {"host": ask_text("Host:", text_default(w["downstream"].get("host"))), "port": ask_text("Port:", text_default(w["downstream"].get("port"))), "user": ask_text("User:", text_default(w["downstream"].get("user"))), "password": ask_text("Pass:", text_default(w["downstream"].get("password")), secret=True), "db": ask_text("DB:", text_default(w["downstream"].get("db"))), "table": w["downstream"].get("table")}
+            else:
+                w["downstream"] = {"host": ask_text("Host:", text_default(w["downstream"].get("host"))), "port": ask_text("Port:", text_default(w["downstream"].get("port"))), "user": ask_text("User:", text_default(w["downstream"].get("user"))), "password": ask_text("Pass:", text_default(w["downstream"].get("password")), secret=True), "db": ask_text("DB:", text_default(w["downstream"].get("db"))), "table": ask_text("Table:", text_default(w["downstream"].get("table")))}
         if c == "Edit Stage": w["stage"] = {"name": ask_text("Stage Name:", text_default(w.get("stage", {}).get("name")))}
         if c == "Edit PITR": w["pitr"] = configure_pitr(w)
         if c == "Edit Verify Interval":
