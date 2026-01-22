@@ -376,9 +376,300 @@ def split_sql_statements(sql_text):
         stmts.append(tail)
     return stmts
 
+def find_matching_paren(text, start_idx):
+    depth = 0
+    in_single = in_double = in_backtick = False
+    i, n = start_idx, len(text)
+    while i < n:
+        ch = text[i]
+        nxt = text[i + 1] if i + 1 < n else ""
+        if in_single:
+            if ch == "\\" and nxt:
+                i += 2; continue
+            if ch == "'" and nxt != "'":
+                in_single = False
+            elif ch == "'" and nxt == "'":
+                i += 2; continue
+            i += 1; continue
+        if in_double:
+            if ch == "\\" and nxt:
+                i += 2; continue
+            if ch == '"' and nxt != '"':
+                in_double = False
+            elif ch == '"' and nxt == '"':
+                i += 2; continue
+            i += 1; continue
+        if in_backtick:
+            if ch == "`":
+                in_backtick = False
+            i += 1; continue
+        if ch == "'":
+            in_single = True; i += 1; continue
+        if ch == '"':
+            in_double = True; i += 1; continue
+        if ch == "`":
+            in_backtick = True; i += 1; continue
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                return i
+        i += 1
+    return None
+
+def count_top_level_items(text):
+    depth = 0
+    in_single = in_double = in_backtick = False
+    count = 0
+    has_token = False
+    i, n = 0, len(text)
+    while i < n:
+        ch = text[i]
+        nxt = text[i + 1] if i + 1 < n else ""
+        if in_single:
+            has_token = True
+            if ch == "\\" and nxt:
+                i += 2; continue
+            if ch == "'" and nxt != "'":
+                in_single = False
+            elif ch == "'" and nxt == "'":
+                i += 2; continue
+            i += 1; continue
+        if in_double:
+            has_token = True
+            if ch == "\\" and nxt:
+                i += 2; continue
+            if ch == '"' and nxt != '"':
+                in_double = False
+            elif ch == '"' and nxt == '"':
+                i += 2; continue
+            i += 1; continue
+        if in_backtick:
+            has_token = True
+            if ch == "`":
+                in_backtick = False
+            i += 1; continue
+        if ch == "'":
+            in_single = True; has_token = True; i += 1; continue
+        if ch == '"':
+            in_double = True; has_token = True; i += 1; continue
+        if ch == "`":
+            in_backtick = True; has_token = True; i += 1; continue
+        if ch == "(":
+            depth += 1
+            has_token = True
+        elif ch == ")":
+            if depth > 0:
+                depth -= 1
+        elif ch == "," and depth == 0:
+            if has_token:
+                count += 1
+            has_token = False
+        elif depth == 0 and not ch.isspace():
+            has_token = True
+        i += 1
+    if has_token:
+        count += 1
+    return count
+
+def count_values_tuples(sql_tail):
+    depth = 0
+    in_single = in_double = in_backtick = False
+    count = 0
+    i, n = 0, len(sql_tail)
+    while i < n:
+        ch = sql_tail[i]
+        nxt = sql_tail[i + 1] if i + 1 < n else ""
+        if in_single:
+            if ch == "\\" and nxt:
+                i += 2; continue
+            if ch == "'" and nxt != "'":
+                in_single = False
+            elif ch == "'" and nxt == "'":
+                i += 2; continue
+            i += 1; continue
+        if in_double:
+            if ch == "\\" and nxt:
+                i += 2; continue
+            if ch == '"' and nxt != '"':
+                in_double = False
+            elif ch == '"' and nxt == '"':
+                i += 2; continue
+            i += 1; continue
+        if in_backtick:
+            if ch == "`":
+                in_backtick = False
+            i += 1; continue
+        if ch == "'":
+            in_single = True; i += 1; continue
+        if ch == '"':
+            in_double = True; i += 1; continue
+        if ch == "`":
+            in_backtick = True; i += 1; continue
+        if ch == "(":
+            if depth == 0:
+                count += 1
+            depth += 1
+        elif ch == ")":
+            if depth > 0:
+                depth -= 1
+        i += 1
+    return count if count > 0 else None
+
+def count_insert_values(stmt):
+    m = re.search(r"\bvalues\b", stmt, re.I)
+    if not m:
+        return None
+    tail = stmt[m.end():]
+    stop = re.search(r"\bon\s+(duplicate|conflict)\b", tail, re.I)
+    if stop:
+        tail = tail[:stop.start()]
+    return count_values_tuples(tail)
+
+def count_delete_in_values(stmt):
+    m = re.search(r"\bin\s*\(", stmt, re.I)
+    if not m:
+        return None
+    start = stmt.find("(", m.end() - 1)
+    if start == -1:
+        return None
+    end = find_matching_paren(stmt, start)
+    if end is None or end <= start + 1:
+        return None
+    content = stmt[start + 1:end].strip()
+    if not content:
+        return None
+    if re.match(r"^select\b", content, re.I):
+        return None
+    return count_top_level_items(content)
+
+def count_apply_stats(sql_text):
+    insert_stmt_count = 0
+    insert_value_count = 0
+    delete_stmt_count = 0
+    delete_value_count = 0
+    unknown_value_count = 0
+    for s in split_sql_statements(sql_text):
+        s_strip = s.strip()
+        if not s_strip:
+            continue
+        if re.match(r"^(BEGIN|COMMIT|ROLLBACK|START\s+TRANSACTION)\b", s_strip, re.I):
+            continue
+        if re.match(r"^(INSERT|REPLACE)\s+INTO\b", s_strip, re.I):
+            insert_stmt_count += 1
+            vcnt = count_insert_values(s_strip)
+            if vcnt is None:
+                unknown_value_count += 1
+            else:
+                insert_value_count += vcnt
+        elif re.match(r"^DELETE\s+FROM\b", s_strip, re.I):
+            delete_stmt_count += 1
+            if re.search(r"\blimit\s+1\b", s_strip, re.I):
+                delete_value_count += 1
+            else:
+                vcnt = count_delete_in_values(s_strip)
+                if vcnt is None:
+                    unknown_value_count += 1
+                else:
+                    delete_value_count += vcnt
+    return insert_stmt_count, insert_value_count, delete_stmt_count, delete_value_count, unknown_value_count
+
 def get_table_columns(conn, db, table):
     try: return conn.query(f"SHOW COLUMNS FROM `{db}`.`{table}`")
     except: return None
+
+def table_has_primary_key(conn, db, table):
+    try:
+        rows = conn.query(f"SHOW INDEX FROM `{db}`.`{table}`")
+    except:
+        return False
+    return any(r.get("Key_name") == "PRIMARY" for r in rows)
+
+def table_has_secondary_index(conn, db, table):
+    try:
+        rows = conn.query(f"SHOW INDEX FROM `{db}`.`{table}`")
+    except:
+        return False
+    for r in rows:
+        name = r.get("Key_name")
+        if name and name != "PRIMARY":
+            return True
+    return False
+
+def is_integer_type(col):
+    t = str(col.get("Type") or "").lower()
+    return t.startswith(("int", "integer", "bigint", "smallint", "tinyint"))
+
+def count_distinct_single(conn, db, table, col):
+    sql = f"SELECT COUNT(DISTINCT `{col}`) as c FROM `{db}`.`{table}`"
+    r = conn.fetch_one(sql)
+    return r["c"] if r and "c" in r else None
+
+def make_index_name(cols):
+    base = "idx_cdc_" + "_".join(cols)
+    if len(base) <= 60:
+        return base
+    h = hashlib.md5(base.encode()).hexdigest()[:8]
+    return f"{base[:50]}_{h}"
+
+def ensure_aux_index_for_no_pk(conn, db, table):
+    if table_has_primary_key(conn, db, table):
+        return
+    if table_has_secondary_index(conn, db, table):
+        log.info(f"Skip auto index: secondary index exists table={db}.{table}")
+        return
+    cols = get_table_columns(conn, db, table) or []
+    int_cols = [c["Field"] for c in cols if c.get("Field") and is_integer_type(c)]
+    if len(int_cols) < 2:
+        if len(int_cols) == 1:
+            best_pair = (int_cols[0],)
+            idx_name = make_index_name(best_pair)
+            try:
+                conn.execute(f"CREATE INDEX `{idx_name}` ON `{db}`.`{table}` (`{best_pair[0]}`)")
+                conn.commit()
+                log.info(f"Auto index created table={db}.{table} index={idx_name} cols=({best_pair[0]})")
+            except Exception as e:
+                log.warning(f"Auto index create failed table={db}.{table} index={idx_name}: {e}")
+        else:
+            log.warning(f"No suitable integer columns for auto index table={db}.{table}")
+        return
+    log.info(f"Auto index eval cols table={db}.{table} cols={int_cols}")
+    total = get_table_count(conn, db, table)
+    if total is None or total == 0:
+        log.warning(f"Skip auto index: empty table or count failed table={db}.{table}")
+        return
+    scores = []
+    for c in int_cols:
+        try:
+            log.info(f"Auto index single sel start col={c}")
+            t0 = time.time()
+            distinct = count_distinct_single(conn, db, table, c)
+            elapsed = time.time() - t0
+            if distinct is None:
+                log.warning(f"Auto index single selectivity failed col={c} table={db}.{table}")
+                continue
+            sel = float(distinct) / float(total)
+            log.info(f"Auto index single sel col={c} distinct={distinct} total={total} sel={sel:.6f} time={elapsed:.3f}s")
+            scores.append((sel, c))
+        except Exception as e:
+            log.warning(f"Auto index single selectivity error col={c} table={db}.{table}: {e}")
+    if not scores:
+        log.warning(f"Auto index skipped: no usable columns table={db}.{table}")
+        return
+    scores.sort(reverse=True)
+    if len(scores) < 2:
+        log.warning(f"Auto index skipped: not enough integer columns table={db}.{table}")
+        return
+    best_pair = (scores[0][1], scores[1][1])
+    best_sel = min(scores[0][0], scores[1][0])
+    idx_name = make_index_name(best_pair)
+    try:
+        conn.execute(f"CREATE INDEX `{idx_name}` ON `{db}`.`{table}` (`{best_pair[0]}`, `{best_pair[1]}`)")
+        conn.commit()
+        log.info(f"Auto index created table={db}.{table} index={idx_name} cols=({best_pair[0]},{best_pair[1]}) sel={best_sel:.6f} total={total}")
+    except Exception as e:
+        log.warning(f"Auto index create failed table={db}.{table} index={idx_name}: {e}")
 
 def build_check_sql(db, table, cols, mo_ts=None):
     sc = f"{{MO_TS = {mo_ts}}}" if mo_ts else ""
@@ -805,6 +1096,38 @@ def apply_incremental_diff(up_conn, ds_conn, d_db, d_table, dfiles):
     applied_stmt_count = 0
     target = f"`{d_db}`.`{d_table}`"
     rewrite = re.compile(r'(delete\s+from\s+|replace\s+into\s+|insert\s+into\s+|update\s+)(/\*.*?\*/\s+)?([`\w]+\.[`\w]+|[`\w]+)', re.I|re.S)
+    total_insert_stmts = 0
+    total_insert_values = 0
+    total_delete_stmts = 0
+    total_delete_values = 0
+    total_unknown_values = 0
+
+    for r in dfiles:
+        f = get_diff_file_path(r)
+        if not f:
+            continue
+        raw = up_conn.fetch_one("select load_file(cast(%s as datalink)) as c", (f,))['c']
+        if raw is None:
+            log.error(f"Load diff file failed: {f}")
+            raise RuntimeError(f"load_file returned NULL: {f}")
+        stmt_str = raw.decode('utf-8') if isinstance(raw, bytes) else raw
+        c_ins, c_ins_v, c_del, c_del_v, c_unk = count_apply_stats(stmt_str)
+        total_insert_stmts += c_ins
+        total_insert_values += c_ins_v
+        total_delete_stmts += c_del
+        total_delete_values += c_del_v
+        total_unknown_values += c_unk
+
+    if total_insert_stmts or total_delete_stmts:
+        stats = (
+            f"Apply stats pre table={d_db}.{d_table} "
+            f"insert_stmts={total_insert_stmts} insert_values={total_insert_values} "
+            f"delete_stmts={total_delete_stmts} delete_values={total_delete_values}"
+        )
+        if total_unknown_values:
+            stats += f" unknown_values={total_unknown_values}"
+        log.info(stats)
+
     for r in dfiles:
         f = get_diff_file_path(r)
         if not f:
@@ -815,6 +1138,7 @@ def apply_incremental_diff(up_conn, ds_conn, d_db, d_table, dfiles):
             raise RuntimeError(f"load_file returned NULL: {f}")
         stmt_str = raw.decode('utf-8') if isinstance(raw, bytes) else raw
         sql = rewrite.sub(lambda m: f"{m.group(1)}{m.group(2) or ''} {target} ", stmt_str)
+        stmt_count = 0
         for s in split_sql_statements(sql):
             s_strip = s.strip()
             if not s_strip:
@@ -823,10 +1147,12 @@ def apply_incremental_diff(up_conn, ds_conn, d_db, d_table, dfiles):
                 continue
             ds_conn.execute(s_strip)
             applied_stmt_count += 1
+            stmt_count += 1
     return applied_stmt_count
 
 def sync_database_table(up_conn, ds_conn, u_db, u_table, d_db, stage_name, lastgood, new_mo_ts):
     d_table = u_table
+    diff_start = time.time()
     if lastgood:
         try:
             dfiles = build_incremental_diff_files(up_conn, u_db, u_table, stage_name, lastgood, new_mo_ts)
@@ -838,13 +1164,16 @@ def sync_database_table(up_conn, ds_conn, u_db, u_table, d_db, stage_name, lastg
     else:
         dfiles = build_full_diff_files(up_conn, u_db, u_table, stage_name, new_mo_ts)
         mode = "FULL"
+    diff_elapsed = time.time() - diff_start
 
+    apply_start = time.time()
     if mode == "FULL":
         apply_full_diff(ds_conn, d_db, d_table, dfiles)
         applied_stmt_count = None
     else:
         applied_stmt_count = apply_incremental_diff(up_conn, ds_conn, d_db, d_table, dfiles)
-    return mode, dfiles, applied_stmt_count
+    apply_elapsed = time.time() - apply_start
+    return mode, dfiles, applied_stmt_count, diff_elapsed, apply_elapsed
 
 def perform_db_sync(config, is_auto=False, lock_held=False, force_full=False, return_detail=False):
     start_ts = time.time()
@@ -892,6 +1221,7 @@ def perform_db_sync(config, is_auto=False, lock_held=False, force_full=False, re
             return sync_return(False)
         for t in tables:
             ensure_downstream_table(ds_conn, up_conn, u_cfg["db"], t, d_cfg["db"], t)
+            ensure_aux_index_for_no_pk(ds_conn, d_cfg["db"], t)
         record_timing(timings, "precheck", precheck_start)
 
         watermark_start = time.time()
@@ -924,14 +1254,14 @@ def perform_db_sync(config, is_auto=False, lock_held=False, force_full=False, re
         ds_conn.conn.begin()
         try:
             for t in tables:
-                diff_start = time.time()
                 try:
-                    mode, dfiles, applied_stmt_count = sync_database_table(
+                    mode, dfiles, applied_stmt_count, diff_cost, apply_cost = sync_database_table(
                         up_conn, ds_conn, u_cfg["db"], t, d_cfg["db"], stage_name, lastgood, new_mo_ts
                     )
                 except Exception as e:
                     raise RuntimeError(f"Table sync failed: {u_cfg['db']}.{t}: {e}") from e
-                diff_elapsed += time.time() - diff_start
+                diff_elapsed += diff_cost
+                apply_elapsed += apply_cost
                 if mode == "INCREMENTAL":
                     if applied_stmt_count == 0:
                         log.info(f"[yellow]Apply diff done table={u_cfg['db']}.{t} mode=INCREMENTAL noop mo_ts={new_mo_ts}[/yellow]")
@@ -1040,6 +1370,7 @@ def perform_table_sync(config, is_auto=False, lock_held=False, force_full=False,
         if not target_exists:
             ddl = up_conn.fetch_one(f"SHOW CREATE TABLE `{u_cfg['db']}`.`{u_cfg['table']}`")['Create Table'].replace(f"`{u_cfg['table']}`", f"`{d_cfg['table']}`", 1)
             ds_conn.execute(ddl); ds_conn.commit()
+        ensure_aux_index_for_no_pk(ds_conn, d_cfg["db"], d_cfg["table"])
         record_timing(timings, "precheck", precheck_start)
 
         watermark_start = time.time()
@@ -1225,11 +1556,12 @@ def sync_loop(config, interval):
                                     continue
                                 verify_start = time.time()
                                 ok, ur, dr, _, _, u_time, d_time = verify_consistency(up, ds, config, ws[0], mode="full", return_detail=True)
-                                log_verify_result(ok, ur, dr, mode="FULL", mo_ts_label=ws[0])
+                                table_label = f"{config['upstream']['db']}.{config['upstream']['table']}"
+                                log_verify_result(ok, ur, dr, mode="FULL", mo_ts_label=ws[0], table_label=table_label)
                                 verify_elapsed = time.time() - verify_start
                                 u_dur = u_time or 0.0
                                 d_dur = d_time or 0.0
-                                log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode=FULL mo_ts={ws[0]}")
+                                log.info(f"Verify duration={u_dur:.3f}/{d_dur:.3f}/{verify_elapsed:.3f}s mode=FULL table={table_label} mo_ts={ws[0]}")
                                 if not ok:
                                     log.warning("Consistency check FAILED; please investigate.")
                                 last_verify = f"{time.strftime('%Y-%m-%d %H:%M:%S')} (FULL)"

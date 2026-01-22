@@ -21,9 +21,9 @@
     "sync_interval": 20,
     "verify_columns": [],
     "pitr": {
-        "name": "pitr_tpcc_db_260121134003",
+        "name": "pitr_tpcc_db_260122162822",
         "level": "database",
-        "obj_id": 510601,
+        "obj_id": 366085,
         "length": 7,
         "unit": "d"
     },
