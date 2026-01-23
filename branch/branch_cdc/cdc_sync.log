@@ -7981,3 +7981,210 @@ Sync timing top3=diff:0.638s, precheck:0.204s, cleanup:0.041s
 [green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4166420848 table=tpcc.bmsql_stock mo_ts=1769072963390713999
 Verify duration=1.102/1.985/3.101s mode=FULL table=tpcc.bmsql_stock mo_ts=1769072963390713999
 Auto mode interrupted by user.
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock[/blue]
+[green]Sync SUCCESS | 1769150918680056999[/green]
+Sync duration=1.160/2.875/4.149s status=SUCCESS
+Sync timing top3=apply:2.875s, diff:1.160s, precheck:0.079s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769150918680056999[/blue]
+Sync FAILED: (1064, 'SQL parser error: table "bmsql_stock_copy_prev" does not exist')
+Sync duration=0.027/0.004/0.144s status=FAILED
+Sync timing top3=watermark:0.077s, diff:0.027s, precheck:0.025s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769150918680056999[/blue]
+Sync FAILED: (1064, 'SQL parser error: table "bmsql_stock_copy_prev" does not exist')
+Sync duration=0.026/0.004/0.186s status=FAILED
+Sync timing top3=watermark:0.081s, precheck:0.058s, diff:0.026s
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769150918680056999[/blue]
+[green]Sync SUCCESS | 1769151048801258999[/green]
+Sync duration=0.031/0.021/0.191s status=SUCCESS
+Sync timing top3=watermark:0.085s, precheck:0.037s, diff:0.031s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769151048801258999[/blue]
+[green]Sync SUCCESS | 1769151069026318999[/green]
+Sync duration=0.037/0.075/0.279s status=SUCCESS
+Sync timing top3=watermark:0.088s, apply:0.075s, precheck:0.054s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769151069026318999[/blue]
+[green]Sync SUCCESS | 1769151089323918999[/green]
+Sync duration=0.038/0.018/0.212s status=SUCCESS
+Sync timing top3=watermark:0.081s, precheck:0.058s, diff:0.038s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=3405614333 table=tpcc.bmsql_stock mo_ts=1769151089323918999
+Verify duration=0.797/0.826/1.627s mode=FULL table=tpcc.bmsql_stock mo_ts=1769151089323918999
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769151089323918999[/blue]
+[green]Sync SUCCESS | 1769151111269091999[/green]
+Sync duration=0.054/0.025/0.337s status=SUCCESS
+Sync timing top3=watermark:0.139s, precheck:0.080s, diff:0.054s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769151111269091999[/blue]
+[green]Sync SUCCESS | 1769151131564663999[/green]
+Sync duration=0.031/0.022/0.242s status=SUCCESS
+Sync timing top3=watermark:0.089s, precheck:0.079s, diff:0.031s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769151131564663999[/blue]
+[green]Sync SUCCESS | 1769151151784454999[/green]
+Sync duration=0.027/0.022/0.200s status=SUCCESS
+Sync timing top3=watermark:0.077s, precheck:0.053s, diff:0.027s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=3405614333 table=tpcc.bmsql_stock mo_ts=1769151151784454999
+Verify duration=0.891/0.706/1.603s mode=FULL table=tpcc.bmsql_stock mo_ts=1769151151784454999
+Auto mode interrupted by user.
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769151151784454999[/blue]
+[yellow]Sync NOOP | 1769151271012287999[/yellow]
+Sync duration=0.034/0.001/0.182s status=NOOP
+Sync timing top3=watermark:0.085s, precheck:0.043s, diff:0.034s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769151151784454999[/blue]
+[yellow]Sync NOOP | 1769151291249002999[/yellow]
+Sync duration=0.027/0.001/0.207s status=NOOP
+Sync timing top3=watermark:0.104s, precheck:0.060s, diff:0.027s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769151151784454999[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=14 insert_values=60752 delete_stmts=16 delete_values=0 unknown_values=20
+Sync FAILED: (1064, 'SQL parser error: You have an error in your SQL syntax; check the manual that corresponds to your MatrixOne server version for the right syntax to use. syntax error at line 1 column 150 near "";')
+Sync duration=1.212/122.255/123.704s status=FAILED
+Sync timing top3=apply:122.255s, diff:1.212s, watermark:0.142s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769151151784454999[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=27 insert_values=128126 delete_stmts=30 delete_values=0 unknown_values=38
+Sync duration=1.259/13.368/14.819s status=FAILED
+Sync timing top3=apply:13.368s, diff:1.259s, watermark:0.102s
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769151151784454999[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=16 insert_values=64063 delete_stmts=35 delete_values=64063
+Apply failed sql saved path=/tmp/branch_cdc/apply_failed_20260123_070217_252763.sql err=(1064, 'SQL parser error: You have an error in your SQL syntax; check the manual that corresponds to your MatrixOne server version for the right syntax to use. syntax error at line 1 column 149 near "";')
+Sync FAILED: (1064, 'SQL parser error: You have an error in your SQL syntax; check the manual that corresponds to your MatrixOne server version for the right syntax to use. syntax error at line 1 column 149 near "";')
+Sync duration=0.911/111.553/112.614s status=FAILED
+Sync timing top3=apply:111.553s, diff:0.911s, watermark:0.090s
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769151151784454999[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=16 insert_values=64063 delete_stmts=35 delete_values=64063
+Apply failed sql saved path=/tmp/branch_cdc/apply_failed_20260123_072021_271995.sql err=(1064, 'SQL parser error: You have an error in your SQL syntax; check the manual that corresponds to your MatrixOne server version for the right syntax to use. syntax error at line 1 column 149 near "";')
+Sync FAILED: (1064, 'SQL parser error: You have an error in your SQL syntax; check the manual that corresponds to your MatrixOne server version for the right syntax to use. syntax error at line 1 column 149 near "";')
+Sync duration=0.691/111.625/112.454s status=FAILED
+Sync timing top3=apply:111.625s, diff:0.691s, watermark:0.083s
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769151151784454999[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=16 insert_values=64063 delete_stmts=38 delete_values=64063
+[green]Sync SUCCESS | 1769155387107159999[/green]
+Sync duration=0.823/20.852/21.852s status=SUCCESS
+Sync timing top3=apply:20.852s, diff:0.823s, watermark:0.097s
+------------------------------------------------------------------------
+[red]FAST VERIFY FAILED[/red] type=pk upstream rows=1000000 hash=3785092149 downstream rows=942663 hash=102209402 mo_ts=1769155387107159999
+Watermark inconsistent with downstream; resetting to FULL sync.
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock[/blue]
+[green]Sync SUCCESS | 1769155428980313999[/green]
+Sync duration=0.751/2.901/3.825s status=SUCCESS
+Sync timing top3=apply:2.901s, diff:0.751s, watermark:0.093s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769155428980313999[/blue]
+[yellow]Sync NOOP | 1769155452803140999[/yellow]
+Sync duration=0.035/0.001/0.187s status=NOOP
+Sync timing top3=watermark:0.089s, precheck:0.043s, diff:0.035s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769155428980313999[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=4 insert_values=8270 delete_stmts=8 delete_values=8270
+[green]Sync SUCCESS | 1769155473052985999[/green]
+Sync duration=0.359/3.004/3.573s status=SUCCESS
+Sync timing top3=apply:3.004s, diff:0.359s, watermark:0.121s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=2014254260 table=tpcc.bmsql_stock mo_ts=1769155473052985999
+Verify duration=1.147/1.180/2.344s mode=FULL table=tpcc.bmsql_stock mo_ts=1769155473052985999
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769155473052985999[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=12 insert_values=44267 delete_stmts=33 delete_values=44267
+[green]Sync SUCCESS | 1769155499009750999[/green]
+Sync duration=1.893/17.742/20.030s status=SUCCESS
+Sync timing top3=apply:17.742s, diff:1.893s, watermark:0.120s
+------------------------------------------------------------------------
+[red]FAST VERIFY FAILED[/red] type=pk upstream rows=1000000 hash=3785092149 downstream rows=959045 hash=3003889338 mo_ts=1769155499009750999
+Watermark inconsistent with downstream; resetting to FULL sync.
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock[/blue]
+[green]Sync SUCCESS | 1769155539252080999[/green]
+Sync duration=2.963/4.054/7.456s status=SUCCESS
+Sync timing top3=apply:4.054s, diff:2.963s, watermark:0.285s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769155539252080999[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=2079 delete_stmts=4 delete_values=2079
+[green]Sync SUCCESS | 1769155566527244999[/green]
+Sync duration=0.234/0.790/1.364s status=SUCCESS
+Sync timing top3=apply:0.790s, diff:0.234s, watermark:0.107s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769155566527244999[/blue]
+[yellow]Sync NOOP | 1769155587856531999[/yellow]
+Sync duration=0.033/0.001/0.186s status=NOOP
+Sync timing top3=watermark:0.089s, precheck:0.046s, diff:0.033s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=725902329 table=tpcc.bmsql_stock mo_ts=1769155566527244999
+Verify duration=1.540/1.640/3.186s mode=FULL table=tpcc.bmsql_stock mo_ts=1769155566527244999
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769155566527244999[/blue]
+[yellow]Sync NOOP | 1769155611265112999[/yellow]
+Sync duration=0.040/0.001/0.206s status=NOOP
+Sync timing top3=watermark:0.082s, precheck:0.062s, diff:0.040s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769155566527244999[/blue]
+[yellow]Sync NOOP | 1769155631512189999[/yellow]
+Sync duration=0.039/0.001/0.227s status=NOOP
+Sync timing top3=watermark:0.101s, precheck:0.066s, diff:0.039s
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769155566527244999[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=3253 delete_stmts=4 delete_values=3253
+[green]Sync SUCCESS | 1769155656455653999[/green]
+Sync duration=0.210/1.145/1.532s status=SUCCESS
+Sync timing top3=apply:1.145s, diff:0.210s, watermark:0.089s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=770793237 table=tpcc.bmsql_stock mo_ts=LATEST
+Verify duration=1.031/0.969/2.012s mode=FULL table=tpcc.bmsql_stock mo_ts=LATEST
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=770793237 table=tpcc.bmsql_stock mo_ts=1769155656455653999
+Verify duration=1.046/0.908/1.969s mode=FULL table=tpcc.bmsql_stock mo_ts=1769155656455653999
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769155656455653999[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=7930 delete_stmts=4 delete_values=7930
+[green]Sync SUCCESS | 1769155714932480999[/green]
+Sync duration=0.630/3.027/3.977s status=SUCCESS
+Sync timing top3=apply:3.027s, diff:0.630s, watermark:0.138s
+------------------------------------------------------------------------
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock[/blue]
+[green]Sync SUCCESS | 1769155725825808999[/green]
+Sync duration=1.226/2.990/4.303s status=SUCCESS
+Sync timing top3=apply:2.990s, diff:1.226s, precheck:0.056s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769155725825808999[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=4 insert_values=11308 delete_stmts=11 delete_values=11308
+[green]Sync SUCCESS | 1769155747482211999[/green]
+Sync duration=0.512/4.068/4.888s status=SUCCESS
+Sync timing top3=apply:4.068s, diff:0.512s, watermark:0.096s
+------------------------------------------------------------------------
+[red]FULL VERIFY FAILED[/red] upstream rows=1000000 hash=2674449455 downstream rows=991809 hash=3333395017 table=tpcc.bmsql_stock mo_ts=1769155747482211999
+Verify duration=0.953/0.941/1.907s mode=FULL table=tpcc.bmsql_stock mo_ts=1769155747482211999
+Interrupted by user.

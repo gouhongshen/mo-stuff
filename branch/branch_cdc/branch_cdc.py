@@ -376,6 +376,29 @@ def split_sql_statements(sql_text):
         stmts.append(tail)
     return stmts
 
+def rewrite_diff_statement(stmt, u_db, u_table, d_db, d_table):
+    def repl(m):
+        dbq = m.group("dbq")
+        tq = m.group("tableq")
+        db = m.group("db")
+        tbl = m.group("table")
+        tbl_l = tbl.lower()
+        u_tbl = u_table.lower()
+        if db.lower() != u_db.lower():
+            return m.group(0)
+        if tbl_l == u_tbl or tbl_l in (f"{u_tbl}_copy_prev", f"{u_tbl}_copy_now", f"{u_tbl}_zero"):
+            return f"{dbq}{d_db}{dbq}.{tq}{d_table}{tq}"
+        if tbl_l.startswith("__mo_diff_"):
+            return f"{dbq}{d_db}{dbq}.{tq}{tbl}{tq}"
+        return m.group(0)
+    # Avoid capturing trailing punctuation like ")" into identifiers.
+    pattern = re.compile(
+        r"(?P<dbq>`?)(?P<db>[^`.\s(),;]+)(?P=dbq)\s*\.\s*(?P<tableq>`?)(?P<table>[^`.\s(),;]+)(?P=tableq)",
+        re.I,
+    )
+    return pattern.sub(repl, stmt)
+
+
 def find_matching_paren(text, start_idx):
     depth = 0
     in_single = in_double = in_backtick = False
@@ -544,6 +567,44 @@ def count_delete_in_values(stmt):
         return None
     return count_top_level_items(content)
 
+def strip_leading_comments(stmt):
+    s = stmt.lstrip()
+    while True:
+        if s.startswith("/*"):
+            end = s.find("*/")
+            if end == -1:
+                return s
+            s = s[end + 2:].lstrip()
+            continue
+        if s.startswith("--"):
+            end = s.find("\n")
+            if end == -1:
+                return ""
+            s = s[end + 1:].lstrip()
+            continue
+        if s.startswith("#"):
+            end = s.find("\n")
+            if end == -1:
+                return ""
+            s = s[end + 1:].lstrip()
+            continue
+        break
+    return s
+
+def extract_insert_table(stmt):
+    s = strip_leading_comments(stmt)
+    m = re.match(r"^\s*(insert|replace)\s+into\s+", s, re.I)
+    if not m:
+        return None
+    rest = s[m.end():]
+    m2 = re.match(r"\s*`?(?P<db>[^`.\s]+)`?\s*\.\s*`?(?P<table>[^`.\s(]+)`?", rest)
+    if m2:
+        return m2.group("table")
+    m3 = re.match(r"\s*`?(?P<table>[^`.\s(]+)`?", rest)
+    if m3:
+        return m3.group("table")
+    return None
+
 def count_apply_stats(sql_text):
     insert_stmt_count = 0
     insert_value_count = 0
@@ -554,23 +615,36 @@ def count_apply_stats(sql_text):
         s_strip = s.strip()
         if not s_strip:
             continue
-        if re.match(r"^(BEGIN|COMMIT|ROLLBACK|START\s+TRANSACTION)\b", s_strip, re.I):
+        s_head = strip_leading_comments(s_strip)
+        if re.match(r"^(BEGIN|COMMIT|ROLLBACK|START\s+TRANSACTION)\b", s_head, re.I):
             continue
-        if re.match(r"^(INSERT|REPLACE)\s+INTO\b", s_strip, re.I):
-            insert_stmt_count += 1
-            vcnt = count_insert_values(s_strip)
-            if vcnt is None:
-                unknown_value_count += 1
+        if re.match(r"^(INSERT|REPLACE)\s+INTO\b", s_head, re.I):
+            tbl = extract_insert_table(s_head)
+            tbl_l = tbl.lower() if tbl else ""
+            is_diff_del = tbl_l.startswith("__mo_diff_del_")
+            is_diff_ins = tbl_l.startswith("__mo_diff_ins_")
+            if is_diff_del:
+                delete_stmt_count += 1
             else:
-                insert_value_count += vcnt
-        elif re.match(r"^DELETE\s+FROM\b", s_strip, re.I):
+                insert_stmt_count += 1
+            vcnt = count_insert_values(s_head)
+            if vcnt is None:
+                if "__mo_diff_" not in s_head.lower():
+                    unknown_value_count += 1
+            else:
+                if is_diff_del:
+                    delete_value_count += vcnt
+                else:
+                    insert_value_count += vcnt
+        elif re.match(r"^DELETE\s+FROM\b", s_head, re.I):
             delete_stmt_count += 1
-            if re.search(r"\blimit\s+1\b", s_strip, re.I):
+            if re.search(r"\blimit\s+1\b", s_head, re.I):
                 delete_value_count += 1
             else:
-                vcnt = count_delete_in_values(s_strip)
+                vcnt = count_delete_in_values(s_head)
                 if vcnt is None:
-                    unknown_value_count += 1
+                    if "__mo_diff_" not in s_head.lower():
+                        unknown_value_count += 1
                 else:
                     delete_value_count += vcnt
     return insert_stmt_count, insert_value_count, delete_stmt_count, delete_value_count, unknown_value_count
@@ -1092,10 +1166,8 @@ def apply_full_diff(ds_conn, d_db, d_table, dfiles):
             continue
         ds_conn.execute(f"LOAD DATA INFILE '{f}' INTO TABLE `{d_db}`.`{d_table}` FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '{qt}' ESCAPED BY '{sl}{sl}' LINES TERMINATED BY '{sl}n' PARALLEL 'TRUE'")
 
-def apply_incremental_diff(up_conn, ds_conn, d_db, d_table, dfiles):
+def apply_incremental_diff(up_conn, ds_conn, u_db, u_table, d_db, d_table, dfiles):
     applied_stmt_count = 0
-    target = f"`{d_db}`.`{d_table}`"
-    rewrite = re.compile(r'(delete\s+from\s+|replace\s+into\s+|insert\s+into\s+|update\s+)(/\*.*?\*/\s+)?([`\w]+\.[`\w]+|[`\w]+)', re.I|re.S)
     total_insert_stmts = 0
     total_insert_values = 0
     total_delete_stmts = 0
@@ -1127,6 +1199,8 @@ def apply_incremental_diff(up_conn, ds_conn, d_db, d_table, dfiles):
         if total_unknown_values:
             stats += f" unknown_values={total_unknown_values}"
         log.info(stats)
+    if total_insert_values == 0 and total_delete_values == 0 and total_unknown_values == 0:
+        return 0
 
     for r in dfiles:
         f = get_diff_file_path(r)
@@ -1137,15 +1211,27 @@ def apply_incremental_diff(up_conn, ds_conn, d_db, d_table, dfiles):
             log.error(f"Load diff file failed: {f}")
             raise RuntimeError(f"load_file returned NULL: {f}")
         stmt_str = raw.decode('utf-8') if isinstance(raw, bytes) else raw
-        sql = rewrite.sub(lambda m: f"{m.group(1)}{m.group(2) or ''} {target} ", stmt_str)
         stmt_count = 0
-        for s in split_sql_statements(sql):
+        for s in split_sql_statements(stmt_str):
             s_strip = s.strip()
             if not s_strip:
                 continue
             if re.match(r"^(BEGIN|COMMIT|ROLLBACK|START\s+TRANSACTION)\b", s_strip, re.I):
                 continue
-            ds_conn.execute(s_strip)
+            exec_sql = rewrite_diff_statement(s_strip, u_db, u_table, d_db, d_table)
+            try:
+                ds_conn.execute(exec_sql)
+            except Exception as e:
+                try:
+                    os.makedirs("/tmp/branch_cdc", exist_ok=True)
+                    ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S_%f")
+                    sql_path = f"/tmp/branch_cdc/apply_failed_{ts}.sql"
+                    with open(sql_path, "w") as f:
+                        f.write(exec_sql)
+                    log.error(f"Apply failed sql saved path={sql_path} err={e}")
+                except Exception as dump_err:
+                    log.error(f"Apply failed sql dump failed: {dump_err} err={e}")
+                raise
             applied_stmt_count += 1
             stmt_count += 1
     return applied_stmt_count
@@ -1171,7 +1257,7 @@ def sync_database_table(up_conn, ds_conn, u_db, u_table, d_db, stage_name, lastg
         apply_full_diff(ds_conn, d_db, d_table, dfiles)
         applied_stmt_count = None
     else:
-        applied_stmt_count = apply_incremental_diff(up_conn, ds_conn, d_db, d_table, dfiles)
+        applied_stmt_count = apply_incremental_diff(up_conn, ds_conn, u_db, u_table, d_db, d_table, dfiles)
     apply_elapsed = time.time() - apply_start
     return mode, dfiles, applied_stmt_count, diff_elapsed, apply_elapsed
 
@@ -1463,7 +1549,7 @@ def perform_table_sync(config, is_auto=False, lock_held=False, force_full=False,
                 apply_start = time.time()
                 ds_conn.conn.begin()
                 try:
-                    applied_stmt_count = apply_incremental_diff(up_conn, ds_conn, d_cfg["db"], d_cfg["table"], dfiles)
+                    applied_stmt_count = apply_incremental_diff(up_conn, ds_conn, u_cfg["db"], u_cfg["table"], d_cfg["db"], d_cfg["table"], dfiles)
                     if applied_stmt_count == 0:
                         ds_conn.rollback()
                         sync_noop = True
