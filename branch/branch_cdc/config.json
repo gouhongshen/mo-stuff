@@ -18,14 +18,14 @@
     "stage": {
         "name": "stage02"
     },
-    "sync_interval": 20,
+    "sync_interval": 120,
     "verify_columns": [],
     "pitr": {
-        "name": "pitr_tpcc_bmsql_stock_260123144830",
-        "level": "table",
-        "obj_id": 272535,
+        "name": "pitr_tpcc_db_260124211401",
+        "level": "database",
+        "obj_id": 541546,
         "length": 7,
         "unit": "d"
     },
-    "sync_scope": "table"
+    "sync_scope": "database"
 }

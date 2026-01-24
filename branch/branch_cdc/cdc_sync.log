@@ -8188,3 +8188,1534 @@ Sync timing top3=apply:4.068s, diff:0.512s, watermark:0.096s
 [red]FULL VERIFY FAILED[/red] upstream rows=1000000 hash=2674449455 downstream rows=991809 hash=3333395017 table=tpcc.bmsql_stock mo_ts=1769155747482211999
 Verify duration=0.953/0.941/1.907s mode=FULL table=tpcc.bmsql_stock mo_ts=1769155747482211999
 Interrupted by user.
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock[/blue]
+Sync FAILED: (20301, 'invalid input: output directory stage://stage02 does not exist')
+Sync duration=0.000/0.000/0.105s status=FAILED
+Sync timing top3=precheck:0.066s, watermark:0.002s, stage:0.000s
+------------------------------------------------------------------------
+[blue]FULL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock[/blue]
+[green]Sync SUCCESS | 1769250536630694723[/green]
+Sync duration=0.352/2.062/2.495s status=SUCCESS
+Sync timing top3=apply:2.062s, diff:0.352s, precheck:0.038s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250536630694723[/blue]
+[yellow]Sync NOOP | 1769250542743378476[/yellow]
+Sync duration=0.030/0.001/0.151s status=NOOP
+Sync timing top3=watermark:0.065s, precheck:0.040s, diff:0.030s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250536630694723[/blue]
+[yellow]Sync NOOP | 1769250562884164816[/yellow]
+Sync duration=0.034/0.002/0.141s status=NOOP
+Sync timing top3=watermark:0.048s, precheck:0.040s, diff:0.034s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250536630694723[/blue]
+[yellow]Sync NOOP | 1769250585086149854[/yellow]
+Sync duration=0.029/0.002/0.143s status=NOOP
+Sync timing top3=watermark:0.058s, precheck:0.039s, diff:0.029s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=25928415 table=tpcc.bmsql_stock mo_ts=1769250536630694723
+Verify duration=0.422/0.419/0.847s mode=FULL table=tpcc.bmsql_stock mo_ts=1769250536630694723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250536630694723[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=20130 delete_stmts=4 delete_values=20130
+[green]Sync SUCCESS | 1769250608048749726[/green]
+Sync duration=0.548/3.755/4.441s status=SUCCESS
+Sync timing top3=apply:3.755s, diff:0.548s, watermark:0.059s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250608048749726[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=37034 delete_stmts=4 delete_values=37034
+[green]Sync SUCCESS | 1769250632537391489[/green]
+Sync duration=1.126/8.630/10.051s status=SUCCESS
+Sync timing top3=apply:8.630s, diff:1.126s, watermark:0.088s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250632537391489[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=37292 delete_stmts=4 delete_values=37292
+[green]Sync SUCCESS | 1769250662562678790[/green]
+Sync duration=1.005/9.267/10.484s status=SUCCESS
+Sync timing top3=apply:9.267s, diff:1.005s, watermark:0.060s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=1569993224 table=tpcc.bmsql_stock mo_ts=1769250662562678790
+Verify duration=0.587/0.704/1.301s mode=FULL table=tpcc.bmsql_stock mo_ts=1769250662562678790
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250662562678790[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=12398 delete_stmts=4 delete_values=12398
+[green]Sync SUCCESS | 1769250694355997004[/green]
+Sync duration=0.659/2.093/2.997s status=SUCCESS
+Sync timing top3=apply:2.093s, diff:0.659s, watermark:0.060s
+------------------------------------------------------------------------
+Auto loop error: (2013, 'Lost connection to MySQL server during query'). Reconnecting...
+Downstream connection failed; retrying...
+Auto loop error: 'NoneType' object has no attribute 'cursor'. Reconnecting...
+Downstream connection failed; retrying...
+Auto loop error: 'NoneType' object has no attribute 'cursor'. Reconnecting...
+Downstream connection failed; retrying...
+Auto loop error: 'NoneType' object has no attribute 'cursor'. Reconnecting...
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250694355997004[/blue]
+[yellow]Sync NOOP | 1769250735456686755[/yellow]
+Sync duration=0.102/0.001/0.345s status=NOOP
+Sync timing top3=watermark:0.105s, diff:0.102s, precheck:0.039s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250694355997004[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=4 insert_values=14014 delete_stmts=11 delete_values=14014
+[green]Sync SUCCESS | 1769250755816732182[/green]
+Sync duration=0.692/2.703/3.681s status=SUCCESS
+Sync timing top3=apply:2.703s, diff:0.692s, watermark:0.085s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=1688953952 table=tpcc.bmsql_stock mo_ts=1769250755816732182
+Verify duration=0.649/0.557/1.213s mode=FULL table=tpcc.bmsql_stock mo_ts=1769250755816732182
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250755816732182[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=4 insert_values=13459 delete_stmts=11 delete_values=13459
+[green]Sync SUCCESS | 1769250782694400048[/green]
+Sync duration=0.449/2.371/3.086s status=SUCCESS
+Sync timing top3=apply:2.371s, diff:0.449s, watermark:0.065s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250782694400048[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=8 insert_values=28482 delete_stmts=25 delete_values=28482
+[green]Sync SUCCESS | 1769250807812231757[/green]
+Sync duration=0.519/5.133/5.798s status=SUCCESS
+Sync timing top3=apply:5.133s, diff:0.519s, watermark:0.058s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250807812231757[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=10 insert_values=34289 delete_stmts=29 delete_values=34289
+[green]Sync SUCCESS | 1769250835636828748[/green]
+Sync duration=0.941/6.471/7.631s status=SUCCESS
+Sync timing top3=apply:6.471s, diff:0.941s, watermark:0.071s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=3380826761 table=tpcc.bmsql_stock mo_ts=1769250835636828748
+Verify duration=0.590/0.688/1.286s mode=FULL table=tpcc.bmsql_stock mo_ts=1769250835636828748
+Auto mode interrupted by user.
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250835636828748[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=10 insert_values=37020 delete_stmts=29 delete_values=37020
+[green]Sync SUCCESS | 1769250868999323866[/green]
+Sync duration=1.034/6.644/7.939s status=SUCCESS
+Sync timing top3=apply:6.644s, diff:1.034s, watermark:0.062s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250868999323866[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=18 insert_values=67017 delete_stmts=48 delete_values=67017
+[green]Sync SUCCESS | 1769250941012984779[/green]
+Sync duration=1.977/13.516/15.795s status=SUCCESS
+Sync timing top3=apply:13.516s, diff:1.977s, precheck:0.096s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769250941012984779[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=18 insert_values=70400 delete_stmts=42 delete_values=70400
+[green]Sync SUCCESS | 1769251022014382121[/green]
+Sync duration=2.208/13.073/15.585s status=SUCCESS
+Sync timing top3=apply:13.073s, diff:2.208s, watermark:0.071s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=3193525939 table=tpcc.bmsql_stock mo_ts=1769251022014382121
+Verify duration=0.694/0.633/1.333s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251022014382121
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251022014382121[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=18 insert_values=71605 delete_stmts=54 delete_values=71605
+[green]Sync SUCCESS | 1769251102944848048[/green]
+Sync duration=1.605/15.732/17.607s status=SUCCESS
+Sync timing top3=apply:15.732s, diff:1.605s, watermark:0.073s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251102944848048[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=18 insert_values=71241 delete_stmts=42 delete_values=71241
+[green]Sync SUCCESS | 1769251184560108111[/green]
+Sync duration=1.828/13.476/15.543s status=SUCCESS
+Sync timing top3=apply:13.476s, diff:1.828s, watermark:0.070s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251184560108111[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=18 insert_values=73120 delete_stmts=51 delete_values=73120
+[green]Sync SUCCESS | 1769251264174270884[/green]
+Sync duration=2.020/15.845/18.132s status=SUCCESS
+Sync timing top3=apply:15.845s, diff:2.020s, watermark:0.068s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=996372290 table=tpcc.bmsql_stock mo_ts=1769251264174270884
+Verify duration=1.204/0.849/2.060s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251264174270884
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251264174270884[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=18 insert_values=69513 delete_stmts=42 delete_values=69513
+[green]Sync SUCCESS | 1769251348354381296[/green]
+Sync duration=1.533/13.326/15.115s status=SUCCESS
+Sync timing top3=apply:13.326s, diff:1.533s, precheck:0.123s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251348354381296[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=18 insert_values=69641 delete_stmts=45 delete_values=69641
+[green]Sync SUCCESS | 1769251427424796697[/green]
+Sync duration=2.268/15.374/18.032s status=SUCCESS
+Sync timing top3=apply:15.374s, diff:2.268s, watermark:0.070s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251427424796697[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=18 insert_values=70527 delete_stmts=45 delete_values=70527
+[green]Sync SUCCESS | 1769251509548808879[/green]
+Sync duration=1.923/13.338/15.668s status=SUCCESS
+Sync timing top3=apply:13.338s, diff:1.923s, watermark:0.134s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=614226787 table=tpcc.bmsql_stock mo_ts=1769251509548808879
+Verify duration=0.799/0.690/1.499s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251509548808879
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251509548808879[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=16 insert_values=61661 delete_stmts=44 delete_values=61661
+[green]Sync SUCCESS | 1769251590667412972[/green]
+Sync duration=1.847/13.654/15.806s status=SUCCESS
+Sync timing top3=apply:13.654s, diff:1.847s, precheck:0.088s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251590667412972[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=16 insert_values=60248 delete_stmts=41 delete_values=60248
+[green]Sync SUCCESS | 1769251670379373701[/green]
+Sync duration=2.468/11.242/14.123s status=SUCCESS
+Sync timing top3=apply:11.242s, diff:2.468s, precheck:0.103s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251670379373701[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=16 insert_values=59394 delete_stmts=41 delete_values=59394
+[green]Sync SUCCESS | 1769251748559328078[/green]
+Sync duration=1.814/11.985/14.309s status=SUCCESS
+Sync timing top3=apply:11.985s, diff:1.814s, precheck:0.182s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=1127276291 table=tpcc.bmsql_stock mo_ts=1769251748559328078
+Verify duration=0.992/0.853/1.853s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251748559328078
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251748559328078[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=16 insert_values=57494 delete_stmts=41 delete_values=57494
+[green]Sync SUCCESS | 1769251829743844595[/green]
+Sync duration=1.871/10.866/13.059s status=SUCCESS
+Sync timing top3=apply:10.866s, diff:1.871s, precheck:0.080s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251829743844595[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=16 insert_values=59985 delete_stmts=38 delete_values=59985
+[green]Sync SUCCESS | 1769251906754226522[/green]
+Sync duration=2.325/13.507/16.232s status=SUCCESS
+Sync timing top3=apply:13.507s, diff:2.325s, precheck:0.100s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251906754226522[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=14 insert_values=57098 delete_stmts=40 delete_values=57098
+[green]Sync SUCCESS | 1769251986837711723[/green]
+Sync duration=1.416/9.578/11.227s status=SUCCESS
+Sync timing top3=apply:9.578s, diff:1.416s, watermark:0.064s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.735/0.741/1.484s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252063597565885[/yellow]
+Sync duration=0.168/0.001/0.413s status=NOOP
+Sync timing top3=diff:0.168s, watermark:0.070s, precheck:0.056s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252128081372756[/yellow]
+Sync duration=0.154/0.001/0.414s status=NOOP
+Sync timing top3=diff:0.154s, watermark:0.080s, precheck:0.060s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252192568742843[/yellow]
+Sync duration=0.159/0.001/0.437s status=NOOP
+Sync timing top3=diff:0.159s, watermark:0.078s, precheck:0.057s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.536/0.584/1.126s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252258093792398[/yellow]
+Sync duration=0.169/0.001/0.426s status=NOOP
+Sync timing top3=diff:0.169s, watermark:0.066s, precheck:0.062s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252322558193792[/yellow]
+Sync duration=0.067/0.001/0.290s status=NOOP
+Sync timing top3=diff:0.067s, precheck:0.056s, watermark:0.051s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252386825396375[/yellow]
+Sync duration=0.061/0.001/0.323s status=NOOP
+Sync timing top3=watermark:0.098s, diff:0.061s, precheck:0.053s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.524/0.563/1.092s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252452269495918[/yellow]
+Sync duration=0.067/0.001/0.298s status=NOOP
+Sync timing top3=diff:0.067s, watermark:0.066s, precheck:0.058s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252516602166243[/yellow]
+Sync duration=0.059/0.001/0.290s status=NOOP
+Sync timing top3=watermark:0.076s, diff:0.059s, precheck:0.054s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252579765276020[/yellow]
+Sync duration=0.070/0.002/0.350s status=NOOP
+Sync timing top3=precheck:0.102s, diff:0.070s, watermark:0.062s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=1.031/0.573/1.611s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252646453264487[/yellow]
+Sync duration=0.058/0.001/0.289s status=NOOP
+Sync timing top3=watermark:0.073s, diff:0.058s, precheck:0.055s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252710657857997[/yellow]
+Sync duration=0.069/0.002/0.313s status=NOOP
+Sync timing top3=watermark:0.077s, diff:0.069s, precheck:0.060s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252774842098154[/yellow]
+Sync duration=0.059/0.001/0.301s status=NOOP
+Sync timing top3=precheck:0.071s, watermark:0.071s, diff:0.059s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.497/0.528/1.030s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252840149221591[/yellow]
+Sync duration=0.062/0.001/0.304s status=NOOP
+Sync timing top3=watermark:0.081s, diff:0.062s, precheck:0.056s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252904293135369[/yellow]
+Sync duration=0.059/0.001/0.267s status=NOOP
+Sync timing top3=diff:0.059s, watermark:0.055s, precheck:0.053s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769252968594720211[/yellow]
+Sync duration=0.059/0.001/0.331s status=NOOP
+Sync timing top3=precheck:0.113s, diff:0.059s, watermark:0.056s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.513/0.528/1.046s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253033913683462[/yellow]
+Sync duration=0.059/0.001/0.285s status=NOOP
+Sync timing top3=watermark:0.064s, diff:0.059s, precheck:0.057s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253098264029039[/yellow]
+Sync duration=0.071/0.001/0.320s status=NOOP
+Sync timing top3=watermark:0.073s, diff:0.071s, precheck:0.057s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253162464462164[/yellow]
+Sync duration=0.063/0.002/1.005s status=NOOP
+Sync timing top3=watermark:0.064s, diff:0.063s, precheck:0.055s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=1.888/0.625/2.519s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253228717151542[/yellow]
+Sync duration=0.058/0.001/0.289s status=NOOP
+Sync timing top3=watermark:0.064s, precheck:0.063s, diff:0.058s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253293244663566[/yellow]
+Sync duration=0.057/0.001/0.285s status=NOOP
+Sync timing top3=watermark:0.066s, diff:0.057s, precheck:0.055s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253358744587421[/yellow]
+Sync duration=0.059/0.001/0.299s status=NOOP
+Sync timing top3=watermark:0.070s, diff:0.059s, precheck:0.057s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.515/0.530/1.051s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253424400670870[/yellow]
+Sync duration=0.066/0.001/0.298s status=NOOP
+Sync timing top3=watermark:0.070s, diff:0.066s, precheck:0.057s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253488660374729[/yellow]
+Sync duration=0.060/0.001/0.282s status=NOOP
+Sync timing top3=diff:0.060s, precheck:0.060s, watermark:0.057s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253553161008254[/yellow]
+Sync duration=0.062/0.001/0.306s status=NOOP
+Sync timing top3=watermark:0.081s, diff:0.062s, precheck:0.054s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.488/0.537/1.031s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253618576170659[/yellow]
+Sync duration=0.063/0.001/0.322s status=NOOP
+Sync timing top3=watermark:0.068s, precheck:0.066s, diff:0.063s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253683081353990[/yellow]
+Sync duration=0.056/0.001/0.312s status=NOOP
+Sync timing top3=watermark:0.084s, precheck:0.066s, diff:0.056s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253747456718753[/yellow]
+Sync duration=0.066/0.002/0.298s status=NOOP
+Sync timing top3=watermark:0.066s, diff:0.066s, precheck:0.060s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.646/0.632/1.284s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253813216950431[/yellow]
+Sync duration=0.066/0.001/0.337s status=NOOP
+Sync timing top3=watermark:0.089s, diff:0.066s, precheck:0.057s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253877647038250[/yellow]
+Sync duration=0.055/0.002/0.287s status=NOOP
+Sync timing top3=watermark:0.064s, precheck:0.056s, diff:0.055s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769253942155090448[/yellow]
+Sync duration=0.060/0.001/0.293s status=NOOP
+Sync timing top3=diff:0.060s, precheck:0.059s, watermark:0.058s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.565/0.513/1.083s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254007654830258[/yellow]
+Sync duration=0.095/0.001/0.327s status=NOOP
+Sync timing top3=diff:0.095s, watermark:0.070s, precheck:0.056s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254072160661052[/yellow]
+Sync duration=0.072/0.002/0.318s status=NOOP
+Sync timing top3=diff:0.072s, precheck:0.064s, watermark:0.062s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254136598286334[/yellow]
+Sync duration=0.065/0.001/0.276s status=NOOP
+Sync timing top3=diff:0.065s, precheck:0.057s, watermark:0.053s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.546/0.514/1.065s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254202145116254[/yellow]
+Sync duration=0.062/0.001/0.288s status=NOOP
+Sync timing top3=watermark:0.064s, diff:0.062s, precheck:0.057s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254266547772468[/yellow]
+Sync duration=0.055/0.001/0.292s status=NOOP
+Sync timing top3=watermark:0.060s, precheck:0.056s, diff:0.055s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254331070303096[/yellow]
+Sync duration=0.059/0.001/0.290s status=NOOP
+Sync timing top3=watermark:0.065s, diff:0.059s, precheck:0.057s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.506/0.521/1.033s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254396553065556[/yellow]
+Sync duration=0.065/0.001/0.316s status=NOOP
+Sync timing top3=precheck:0.069s, diff:0.065s, watermark:0.059s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254461083178586[/yellow]
+Sync duration=0.091/0.001/0.332s status=NOOP
+Sync timing top3=diff:0.091s, watermark:0.077s, precheck:0.056s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254525471449086[/yellow]
+Sync duration=0.064/0.002/0.335s status=NOOP
+Sync timing top3=diff:0.064s, precheck:0.063s, watermark:0.063s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.503/0.576/1.085s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254589777376813[/yellow]
+Sync duration=0.062/0.002/0.297s status=NOOP
+Sync timing top3=precheck:0.065s, diff:0.062s, watermark:0.050s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254655332609473[/yellow]
+Sync duration=0.062/0.002/0.299s status=NOOP
+Sync timing top3=diff:0.062s, precheck:0.059s, watermark:0.056s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254719808280816[/yellow]
+Sync duration=0.065/0.001/0.300s status=NOOP
+Sync timing top3=precheck:0.067s, diff:0.065s, watermark:0.055s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.580/0.541/1.126s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254785348583147[/yellow]
+Sync duration=0.063/0.001/0.328s status=NOOP
+Sync timing top3=watermark:0.083s, precheck:0.067s, diff:0.063s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254849875110001[/yellow]
+Sync duration=0.063/0.001/0.314s status=NOOP
+Sync timing top3=watermark:0.084s, diff:0.063s, precheck:0.058s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254914278577162[/yellow]
+Sync duration=0.063/0.001/0.301s status=NOOP
+Sync timing top3=watermark:0.068s, diff:0.063s, precheck:0.062s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.548/0.557/1.112s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769254979904874248[/yellow]
+Sync duration=0.071/0.002/0.332s status=NOOP
+Sync timing top3=diff:0.071s, precheck:0.065s, watermark:0.059s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255044476965605[/yellow]
+Sync duration=0.062/0.001/0.304s status=NOOP
+Sync timing top3=precheck:0.071s, diff:0.062s, watermark:0.052s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255108980658398[/yellow]
+Sync duration=0.067/0.001/0.305s status=NOOP
+Sync timing top3=diff:0.067s, precheck:0.065s, watermark:0.059s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.520/0.573/1.099s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255174548924586[/yellow]
+Sync duration=0.062/0.001/0.299s status=NOOP
+Sync timing top3=precheck:0.065s, watermark:0.064s, diff:0.062s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255239065724858[/yellow]
+Sync duration=0.067/0.002/0.313s status=NOOP
+Sync timing top3=watermark:0.070s, diff:0.067s, precheck:0.061s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255303583857599[/yellow]
+Sync duration=0.069/0.002/0.346s status=NOOP
+Sync timing top3=diff:0.069s, watermark:0.069s, precheck:0.063s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.618/0.638/1.263s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255369417223912[/yellow]
+Sync duration=0.062/0.002/0.303s status=NOOP
+Sync timing top3=watermark:0.067s, diff:0.062s, precheck:0.060s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255433954057984[/yellow]
+Sync duration=0.061/0.001/0.302s status=NOOP
+Sync timing top3=watermark:0.068s, precheck:0.065s, diff:0.061s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255498462393651[/yellow]
+Sync duration=0.061/0.001/0.292s status=NOOP
+Sync timing top3=watermark:0.066s, diff:0.061s, precheck:0.057s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.524/0.549/1.079s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255564086526722[/yellow]
+Sync duration=0.055/0.001/0.317s status=NOOP
+Sync timing top3=watermark:0.083s, precheck:0.065s, diff:0.055s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255628618517641[/yellow]
+Sync duration=0.070/0.002/0.328s status=NOOP
+Sync timing top3=precheck:0.071s, diff:0.070s, watermark:0.061s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255693167902462[/yellow]
+Sync duration=0.066/0.002/0.309s status=NOOP
+Sync timing top3=diff:0.066s, precheck:0.064s, watermark:0.056s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.571/0.548/1.125s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255758867900901[/yellow]
+Sync duration=0.059/0.002/0.302s status=NOOP
+Sync timing top3=watermark:0.070s, precheck:0.062s, diff:0.059s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255823447944548[/yellow]
+Sync duration=0.061/0.001/0.334s status=NOOP
+Sync timing top3=watermark:0.092s, precheck:0.065s, diff:0.061s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255887980882970[/yellow]
+Sync duration=0.060/0.001/0.297s status=NOOP
+Sync timing top3=diff:0.060s, precheck:0.059s, watermark:0.059s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.526/0.556/1.089s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769255953619544097[/yellow]
+Sync duration=0.070/0.002/0.319s status=NOOP
+Sync timing top3=diff:0.070s, precheck:0.068s, watermark:0.063s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769256018175064184[/yellow]
+Sync duration=0.060/0.002/1.104s status=NOOP
+Sync timing top3=watermark:0.067s, precheck:0.063s, diff:0.060s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769256083600792916[/yellow]
+Sync duration=0.062/0.001/1.633s status=NOOP
+Sync timing top3=watermark:0.069s, precheck:0.066s, diff:0.062s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.507/0.549/1.061s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769256150531909470[/yellow]
+Sync duration=0.059/0.001/0.283s status=NOOP
+Sync timing top3=watermark:0.061s, diff:0.059s, precheck:0.058s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769256215163792746[/yellow]
+Sync duration=0.068/0.002/0.316s status=NOOP
+Sync timing top3=diff:0.068s, watermark:0.066s, precheck:0.063s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769256279722289337[/yellow]
+Sync duration=0.065/0.002/0.306s status=NOOP
+Sync timing top3=precheck:0.070s, diff:0.065s, watermark:0.058s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.596/0.589/1.193s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769256345538362555[/yellow]
+Sync duration=0.066/0.001/0.313s status=NOOP
+Sync timing top3=diff:0.066s, watermark:0.066s, precheck:0.060s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769256408794890743[/yellow]
+Sync duration=0.065/0.002/0.321s status=NOOP
+Sync timing top3=watermark:0.085s, diff:0.065s, precheck:0.048s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769256474802116235[/yellow]
+Sync duration=0.066/0.002/0.293s status=NOOP
+Sync timing top3=diff:0.066s, watermark:0.064s, precheck:0.060s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.513/0.540/1.059s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769256540436456415[/yellow]
+Sync duration=0.068/0.002/0.315s status=NOOP
+Sync timing top3=precheck:0.074s, diff:0.068s, watermark:0.066s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769256605039210801[/yellow]
+Sync duration=0.066/0.001/0.312s status=NOOP
+Sync timing top3=precheck:0.070s, diff:0.066s, watermark:0.051s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769256669671283672[/yellow]
+Sync duration=0.061/0.001/0.320s status=NOOP
+Sync timing top3=watermark:0.082s, precheck:0.067s, diff:0.061s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=4072187013 table=tpcc.bmsql_stock mo_ts=1769251986837711723
+Verify duration=0.500/0.549/1.055s mode=FULL table=tpcc.bmsql_stock mo_ts=1769251986837711723
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+[yellow]Sync NOOP | 1769256735375641947[/yellow]
+Sync duration=0.059/0.001/0.305s status=NOOP
+Sync timing top3=watermark:0.070s, precheck:0.063s, diff:0.059s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769251986837711723[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=12 insert_values=45287 delete_stmts=30 delete_values=45287
+[green]Sync SUCCESS | 1769256800019896324[/green]
+Sync duration=1.690/8.678/10.760s status=SUCCESS
+Sync timing top3=apply:8.678s, diff:1.690s, precheck:0.130s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769256800019896324[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=12 insert_values=42496 delete_stmts=33 delete_values=42496
+[green]Sync SUCCESS | 1769256875050587118[/green]
+Sync duration=1.579/7.299/9.193s status=SUCCESS
+Sync timing top3=apply:7.299s, diff:1.579s, watermark:0.067s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=3623583758 table=tpcc.bmsql_stock mo_ts=1769256875050587118
+Verify duration=0.598/0.602/1.208s mode=FULL table=tpcc.bmsql_stock mo_ts=1769256875050587118
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769256875050587118[/blue]
+[yellow]Sync NOOP | 1769256949715827448[/yellow]
+Sync duration=0.193/0.002/0.481s status=NOOP
+Sync timing top3=diff:0.193s, watermark:0.069s, precheck:0.066s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769256875050587118[/blue]
+[yellow]Sync NOOP | 1769257014478034596[/yellow]
+Sync duration=0.073/0.001/0.388s status=NOOP
+Sync timing top3=diff:0.073s, watermark:0.067s, precheck:0.061s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769256875050587118[/blue]
+[yellow]Sync NOOP | 1769257079996013915[/yellow]
+Sync duration=1.426/0.001/2.527s status=NOOP
+Sync timing top3=diff:1.426s, watermark:0.875s, precheck:0.075s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=3623583758 table=tpcc.bmsql_stock mo_ts=1769256875050587118
+Verify duration=0.589/0.633/1.229s mode=FULL table=tpcc.bmsql_stock mo_ts=1769256875050587118
+Auto loop error: (2013, 'Lost connection to MySQL server during query'). Reconnecting...
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769256875050587118[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=10543 delete_stmts=4 delete_values=10543
+[green]Sync SUCCESS | 1769257149374642295[/green]
+Sync duration=0.673/2.010/3.066s status=SUCCESS
+Sync timing top3=apply:2.010s, diff:0.673s, precheck:0.093s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769257149374642295[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=4 insert_values=57949 delete_stmts=11 delete_values=57949
+[green]Sync SUCCESS | 1769257216709448080[/green]
+Sync duration=1.517/11.084/12.928s status=SUCCESS
+Sync timing top3=apply:11.084s, diff:1.517s, watermark:0.084s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769257216709448080[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=36538 delete_stmts=4 delete_values=36538
+[green]Sync SUCCESS | 1769257293924755093[/green]
+Sync duration=0.863/6.332/7.412s status=SUCCESS
+Sync timing top3=apply:6.332s, diff:0.863s, watermark:0.068s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=316770047 table=tpcc.bmsql_stock mo_ts=1769257293924755093
+Verify duration=0.621/0.728/1.356s mode=FULL table=tpcc.bmsql_stock mo_ts=1769257293924755093
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769257293924755093[/blue]
+[yellow]Sync NOOP | 1769257366982844286[/yellow]
+Sync duration=0.090/0.002/0.261s status=NOOP
+Sync timing top3=diff:0.090s, watermark:0.067s, precheck:0.046s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769257293924755093[/blue]
+[yellow]Sync NOOP | 1769257432569443394[/yellow]
+Sync duration=0.082/0.001/0.243s status=NOOP
+Sync timing top3=diff:0.082s, watermark:0.059s, precheck:0.049s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769257293924755093[/blue]
+[yellow]Sync NOOP | 1769257497083557507[/yellow]
+Sync duration=0.085/0.001/0.239s status=NOOP
+Sync timing top3=diff:0.085s, watermark:0.055s, precheck:0.045s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=316770047 table=tpcc.bmsql_stock mo_ts=1769257293924755093
+Verify duration=0.572/1.599/2.178s mode=FULL table=tpcc.bmsql_stock mo_ts=1769257293924755093
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769257293924755093[/blue]
+[yellow]Sync NOOP | 1769257563897224071[/yellow]
+Sync duration=0.093/0.002/0.290s status=NOOP
+Sync timing top3=diff:0.093s, watermark:0.085s, precheck:0.051s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769257293924755093[/blue]
+[yellow]Sync NOOP | 1769257628453779967[/yellow]
+Sync duration=0.051/0.002/0.211s status=NOOP
+Sync timing top3=watermark:0.058s, diff:0.051s, precheck:0.046s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769257293924755093[/blue]
+[yellow]Sync NOOP | 1769257692992770814[/yellow]
+Sync duration=0.048/0.001/0.205s status=NOOP
+Sync timing top3=watermark:0.063s, diff:0.048s, precheck:0.045s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=316770047 table=tpcc.bmsql_stock mo_ts=1769257293924755093
+Verify duration=0.526/0.533/1.065s mode=FULL table=tpcc.bmsql_stock mo_ts=1769257293924755093
+Auto mode interrupted by user.
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=316770047 table=tpcc.bmsql_stock mo_ts=1769257293924755093
+Verify duration=0.531/2.655/3.194s mode=FULL table=tpcc.bmsql_stock mo_ts=1769257293924755093
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=316770047 table=tpcc.bmsql_stock mo_ts=LATEST
+Verify duration=0.624/0.610/1.244s mode=FULL table=tpcc.bmsql_stock mo_ts=LATEST
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769257293924755093[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=6 insert_values=108470 delete_stmts=15 delete_values=108470
+[green]Sync SUCCESS | 1769257986193515762[/green]
+Sync duration=1.977/18.658/20.861s status=SUCCESS
+Sync timing top3=apply:18.658s, diff:1.977s, watermark:0.085s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=2359544231 table=tpcc.bmsql_stock mo_ts=LATEST
+Verify duration=0.566/0.560/1.135s mode=FULL table=tpcc.bmsql_stock mo_ts=LATEST
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769257986193515762[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=6 insert_values=101096 delete_stmts=15 delete_values=101096
+[green]Sync SUCCESS | 1769258795856316142[/green]
+Sync duration=1.937/20.956/23.112s status=SUCCESS
+Sync timing top3=apply:20.956s, diff:1.937s, watermark:0.081s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769258795856316142[/blue]
+Apply timing load=0.001s exec=0.000s table=tpcc_ds.bmsql_stock
+[yellow]Sync NOOP | 1769258838769460973[/yellow]
+Sync duration=0.101/0.003/0.238s status=NOOP
+Sync timing top3=diff:0.101s, watermark:0.067s, precheck:0.048s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769258795856316142[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=6 insert_values=90139 delete_stmts=18 delete_values=90139
+Apply timing load=0.097s exec=5.047s table=tpcc_ds.bmsql_stock
+[green]Sync SUCCESS | 1769258959788857376[/green]
+Sync duration=1.737/17.779/19.675s status=SUCCESS
+Sync timing top3=apply:17.779s, diff:1.737s, watermark:0.081s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=3507985534 table=tpcc.bmsql_stock mo_ts=LATEST
+Verify duration=0.589/0.597/1.196s mode=FULL table=tpcc.bmsql_stock mo_ts=LATEST
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769258959788857376[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=6 insert_values=86662 delete_stmts=15 delete_values=86662
+Apply timing load=0.094s preprocess=8.141s exec=2.696s table=tpcc_ds.bmsql_stock
+[green]Sync SUCCESS | 1769259332692980561[/green]
+Sync duration=1.752/15.469/17.470s status=SUCCESS
+Sync timing top3=apply:15.469s, diff:1.752s, watermark:0.077s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=1429979983 table=tpcc.bmsql_stock mo_ts=LATEST
+Verify duration=0.598/0.570/1.176s mode=FULL table=tpcc.bmsql_stock mo_ts=LATEST
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769259332692980561[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=4 insert_values=75210 delete_stmts=11 delete_values=75210
+Apply timing load=0.092s preprocess=5.210s exec=2.440s table=tpcc_ds.bmsql_stock
+[green]Sync SUCCESS | 1769259823754515217[/green]
+Sync duration=1.839/9.855/11.950s status=SUCCESS
+Sync timing top3=apply:9.855s, diff:1.839s, watermark:0.075s
+------------------------------------------------------------------------
+FAST CHECK PASSED type=pk
+[blue]INCREMENTAL Sync | Task: 127_0_0_1_6001_tpcc_bmsql_stock_to_127_0_0_1_6001_tpcc_ds_bmsql_stock | From 1769259823754515217[/blue]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=6 insert_values=85032 delete_stmts=15 delete_values=85032
+Apply timing load=0.145s preprocess=0.018s exec=2.782s table=tpcc_ds.bmsql_stock
+[green]Sync SUCCESS | 1769260151357169596[/green]
+Sync duration=1.766/5.397/7.363s status=SUCCESS
+Sync timing top3=apply:5.397s, diff:1.766s, watermark:0.065s
+------------------------------------------------------------------------
+[green]Apply diff done table=tpcc.bmsql_config mode=FULL mo_ts=1769260463072158591[/green]
+[green]Apply diff done table=tpcc.bmsql_customer mode=FULL mo_ts=1769260463072158591[/green]
+[green]Apply diff done table=tpcc.bmsql_district mode=FULL mo_ts=1769260463072158591[/green]
+[green]Apply diff done table=tpcc.bmsql_history mode=FULL mo_ts=1769260463072158591[/green]
+[green]Apply diff done table=tpcc.bmsql_item mode=FULL mo_ts=1769260463072158591[/green]
+[green]Apply diff done table=tpcc.bmsql_new_order mode=FULL mo_ts=1769260463072158591[/green]
+[green]Apply diff done table=tpcc.bmsql_oorder mode=FULL mo_ts=1769260463072158591[/green]
+[green]Apply diff done table=tpcc.bmsql_order_line mode=FULL mo_ts=1769260463072158591[/green]
+[green]Apply diff done table=tpcc.bmsql_stock mode=FULL mo_ts=1769260463072158591[/green]
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=FULL mo_ts=1769260463072158591[/green]
+[green]Apply diff done table=tpcc.x mode=FULL mo_ts=1769260463072158591[/green]
+[green]Apply diff done table=tpcc.y mode=FULL mo_ts=1769260463072158591[/green]
+[green]Sync SUCCESS | 1769260463072158591[/green]
+Sync duration=3.872/15.579/22.128s status=SUCCESS
+Sync timing top3=apply:15.579s, diff:3.872s, watermark:2.171s
+------------------------------------------------------------------------
+Apply timing load=0.003s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769260515076677562[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=10040 delete_stmts=4 delete_values=10040
+Apply timing load=0.038s preprocess=0.012s exec=0.591s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769260515076677562[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=60 delete_stmts=4 delete_values=60
+Apply timing load=0.002s preprocess=0.000s exec=0.062s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769260515076677562[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=5970 delete_stmts=1 delete_values=0
+Apply timing load=0.004s preprocess=0.001s exec=0.161s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769260515076677562[/green]
+Apply timing load=0.002s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769260515076677562[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=6157 delete_stmts=4 delete_values=5340
+Apply timing load=0.002s preprocess=0.000s exec=0.102s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769260515076677562[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=11497 delete_stmts=4 delete_values=5340
+Apply timing load=0.003s preprocess=0.001s exec=0.165s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769260515076677562[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=6 insert_values=114282 delete_stmts=12 delete_values=53360
+Apply timing load=0.044s preprocess=0.007s exec=1.892s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=24 mo_ts=1769260515076677562[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=39936 delete_stmts=4 delete_values=39936
+Apply timing load=0.065s preprocess=0.017s exec=1.479s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=12 mo_ts=1769260515076677562[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=6 delete_stmts=4 delete_values=6
+Apply timing load=0.001s preprocess=0.000s exec=0.065s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769260515076677562[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769260515076677562[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769260515076677562[/yellow]
+[green]Sync SUCCESS | 1769260515076677562[/green]
+Sync duration=4.353/6.960/12.020s status=SUCCESS
+Sync timing top3=apply:6.960s, diff:4.353s, watermark:0.511s
+------------------------------------------------------------------------
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769260557124653755[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=8910 delete_stmts=4 delete_values=8910
+Apply timing load=0.030s preprocess=0.005s exec=0.546s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769260557124653755[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=60 delete_stmts=4 delete_values=60
+Apply timing load=0.001s preprocess=0.000s exec=0.063s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769260557124653755[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=5245 delete_stmts=1 delete_values=0
+Apply timing load=0.004s preprocess=0.000s exec=0.093s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769260557124653755[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769260557124653755[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=5382 delete_stmts=4 delete_values=4610
+Apply timing load=0.002s preprocess=0.000s exec=0.109s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769260557124653755[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=9992 delete_stmts=4 delete_values=4610
+Apply timing load=0.002s preprocess=0.001s exec=0.182s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769260557124653755[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=6 insert_values=100191 delete_stmts=12 delete_values=46347
+Apply timing load=0.079s preprocess=0.004s exec=1.679s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=24 mo_ts=1769260557124653755[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=36036 delete_stmts=4 delete_values=36036
+Apply timing load=0.052s preprocess=0.007s exec=1.282s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=12 mo_ts=1769260557124653755[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=6 delete_stmts=4 delete_values=6
+Apply timing load=0.001s preprocess=0.000s exec=0.143s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769260557124653755[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769260557124653755[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769260557124653755[/yellow]
+[green]Sync SUCCESS | 1769260557124653755[/green]
+Sync duration=7.059/6.369/14.078s status=SUCCESS
+Sync timing top3=diff:7.059s, apply:6.369s, watermark:0.470s
+------------------------------------------------------------------------
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769260601259350835[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=9009 delete_stmts=4 delete_values=9009
+Apply timing load=0.025s preprocess=0.004s exec=0.494s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769260601259350835[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=60 delete_stmts=4 delete_values=60
+Apply timing load=0.002s preprocess=0.000s exec=0.079s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769260601259350835[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=5010 delete_stmts=1 delete_values=0
+Apply timing load=0.003s preprocess=0.001s exec=0.091s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769260601259350835[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769260601259350835[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=5245 delete_stmts=4 delete_values=5080
+Apply timing load=0.001s preprocess=0.000s exec=0.095s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769260601259350835[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=10325 delete_stmts=4 delete_values=5080
+Apply timing load=0.003s preprocess=0.001s exec=0.262s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769260601259350835[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=6 insert_values=103172 delete_stmts=12 delete_values=50606
+Apply timing load=0.032s preprocess=0.006s exec=1.756s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=24 mo_ts=1769260601259350835[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=35595 delete_stmts=4 delete_values=35595
+Apply timing load=0.058s preprocess=0.008s exec=1.528s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=12 mo_ts=1769260601259350835[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=6 delete_stmts=4 delete_values=6
+Apply timing load=0.002s preprocess=0.000s exec=0.064s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769260601259350835[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769260601259350835[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769260601259350835[/yellow]
+[green]Sync SUCCESS | 1769260601259350835[/green]
+Sync duration=5.982/6.659/13.313s status=SUCCESS
+Sync timing top3=apply:6.659s, diff:5.982s, watermark:0.495s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=391139736 table=tpcc.bmsql_stock mo_ts=1769260601259350835
+Verify duration=0.776/0.868/1.655s mode=FULL table=tpcc.bmsql_stock mo_ts=1769260601259350835
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769260646314260866[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=9187 delete_stmts=4 delete_values=9187
+Apply timing load=0.034s preprocess=0.005s exec=0.655s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769260646314260866[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=60 delete_stmts=4 delete_values=60
+Apply timing load=0.001s preprocess=0.000s exec=0.067s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769260646314260866[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=5283 delete_stmts=1 delete_values=0
+Apply timing load=0.004s preprocess=0.000s exec=0.115s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769260646314260866[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769260646314260866[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=5722 delete_stmts=4 delete_values=5010
+Apply timing load=0.002s preprocess=0.000s exec=0.102s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769260646314260866[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=10732 delete_stmts=4 delete_values=5010
+Apply timing load=0.004s preprocess=0.001s exec=0.171s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769260646314260866[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=6 insert_values=107282 delete_stmts=12 delete_values=50194
+Apply timing load=0.040s preprocess=0.005s exec=1.917s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=24 mo_ts=1769260646314260866[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=38152 delete_stmts=4 delete_values=38152
+Apply timing load=0.054s preprocess=0.007s exec=1.521s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=12 mo_ts=1769260646314260866[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=6 delete_stmts=4 delete_values=6
+Apply timing load=0.001s preprocess=0.000s exec=0.058s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769260646314260866[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769260646314260866[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769260646314260866[/yellow]
+[green]Sync SUCCESS | 1769260646314260866[/green]
+Sync duration=4.592/7.021/12.346s status=SUCCESS
+Sync timing top3=apply:7.021s, diff:4.592s, watermark:0.511s
+------------------------------------------------------------------------
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769260688654219727[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=9556 delete_stmts=4 delete_values=9556
+Apply timing load=0.029s preprocess=0.004s exec=0.582s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769260688654219727[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=60 delete_stmts=4 delete_values=60
+Apply timing load=0.001s preprocess=0.000s exec=0.094s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769260688654219727[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=5267 delete_stmts=1 delete_values=0
+Apply timing load=0.003s preprocess=0.000s exec=0.116s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769260688654219727[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769260688654219727[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=5542 delete_stmts=4 delete_values=5410
+Apply timing load=0.001s preprocess=0.000s exec=0.120s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769260688654219727[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=10952 delete_stmts=4 delete_values=5410
+Apply timing load=0.003s preprocess=0.001s exec=0.181s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769260688654219727[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=6 insert_values=109908 delete_stmts=12 delete_values=54251
+Apply timing load=0.040s preprocess=0.006s exec=1.937s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=24 mo_ts=1769260688654219727[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=37309 delete_stmts=4 delete_values=37309
+Apply timing load=0.054s preprocess=0.007s exec=1.366s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=12 mo_ts=1769260688654219727[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=6 delete_stmts=4 delete_values=6
+Apply timing load=0.001s preprocess=0.000s exec=0.111s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769260688654219727[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769260688654219727[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769260688654219727[/yellow]
+[green]Sync SUCCESS | 1769260688654219727[/green]
+Sync duration=6.673/6.892/14.350s status=SUCCESS
+Sync timing top3=apply:6.892s, diff:6.673s, watermark:0.567s
+------------------------------------------------------------------------
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769260733062572123[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=9322 delete_stmts=4 delete_values=9322
+Apply timing load=0.036s preprocess=0.004s exec=0.495s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769260733062572123[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=60 delete_stmts=4 delete_values=60
+Apply timing load=0.001s preprocess=0.000s exec=0.069s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769260733062572123[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=5527 delete_stmts=1 delete_values=0
+Apply timing load=0.003s preprocess=0.000s exec=0.110s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769260733062572123[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769260733062572123[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=5554 delete_stmts=4 delete_values=4950
+Apply timing load=0.001s preprocess=0.000s exec=0.098s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769260733062572123[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=10504 delete_stmts=4 delete_values=4950
+Apply timing load=0.003s preprocess=0.001s exec=0.216s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769260733062572123[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=6 insert_values=104938 delete_stmts=12 delete_values=49479
+Apply timing load=0.034s preprocess=0.004s exec=1.847s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=24 mo_ts=1769260733062572123[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=37231 delete_stmts=4 delete_values=37231
+Apply timing load=0.051s preprocess=0.008s exec=1.431s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=12 mo_ts=1769260733062572123[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=6 delete_stmts=4 delete_values=6
+Apply timing load=0.001s preprocess=0.000s exec=0.062s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769260733062572123[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769260733062572123[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769260733062572123[/yellow]
+[green]Sync SUCCESS | 1769260733062572123[/green]
+Sync duration=6.698/6.733/14.149s status=SUCCESS
+Sync timing top3=apply:6.733s, diff:6.698s, watermark:0.491s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=137723395 table=tpcc.bmsql_stock mo_ts=1769260733062572123
+Verify duration=0.769/0.689/1.470s mode=FULL table=tpcc.bmsql_stock mo_ts=1769260733062572123
+Apply timing load=0.002s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769260778696337378[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=9568 delete_stmts=4 delete_values=9568
+Apply timing load=0.027s preprocess=0.004s exec=0.602s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769260778696337378[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=60 delete_stmts=4 delete_values=60
+Apply timing load=0.001s preprocess=0.000s exec=0.062s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769260778696337378[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=5643 delete_stmts=1 delete_values=0
+Apply timing load=0.003s preprocess=0.000s exec=0.098s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769260778696337378[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769260778696337378[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=5886 delete_stmts=4 delete_values=5130
+Apply timing load=0.002s preprocess=0.000s exec=0.107s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769260778696337378[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=11016 delete_stmts=4 delete_values=5130
+Apply timing load=0.002s preprocess=0.001s exec=0.169s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769260778696337378[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=6 insert_values=109959 delete_stmts=12 delete_values=51066
+Apply timing load=0.040s preprocess=0.005s exec=1.943s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=24 mo_ts=1769260778696337378[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=39037 delete_stmts=4 delete_values=39037
+Apply timing load=0.067s preprocess=0.011s exec=1.503s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=12 mo_ts=1769260778696337378[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=6 delete_stmts=4 delete_values=6
+Apply timing load=0.001s preprocess=0.000s exec=0.070s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769260778696337378[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769260778696337378[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769260778696337378[/yellow]
+[green]Sync SUCCESS | 1769260778696337378[/green]
+Sync duration=4.667/6.924/12.318s status=SUCCESS
+Sync timing top3=apply:6.924s, diff:4.667s, watermark:0.508s
+------------------------------------------------------------------------
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769260821023520280[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=9095 delete_stmts=4 delete_values=9095
+Apply timing load=0.024s preprocess=0.004s exec=0.652s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769260821023520280[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=60 delete_stmts=4 delete_values=60
+Apply timing load=0.001s preprocess=0.000s exec=0.067s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769260821023520280[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=5552 delete_stmts=1 delete_values=0
+Apply timing load=0.003s preprocess=0.001s exec=0.100s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769260821023520280[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769260821023520280[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=5690 delete_stmts=4 delete_values=4770
+Apply timing load=0.001s preprocess=0.000s exec=0.105s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769260821023520280[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=10460 delete_stmts=4 delete_values=4770
+Apply timing load=0.003s preprocess=0.001s exec=0.168s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769260821023520280[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=6 insert_values=104482 delete_stmts=12 delete_values=47652
+Apply timing load=0.042s preprocess=0.004s exec=1.895s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=24 mo_ts=1769260821023520280[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=37960 delete_stmts=4 delete_values=37960
+Apply timing load=0.042s preprocess=0.009s exec=1.532s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=12 mo_ts=1769260821023520280[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=6 delete_stmts=4 delete_values=6
+Apply timing load=0.001s preprocess=0.000s exec=0.067s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769260821023520280[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769260821023520280[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769260821023520280[/yellow]
+[green]Sync SUCCESS | 1769260821023520280[/green]
+Sync duration=4.495/6.811/12.076s status=SUCCESS
+Sync timing top3=apply:6.811s, diff:4.495s, watermark:0.551s
+------------------------------------------------------------------------
+Auto mode interrupted by user.
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769260842165330070[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=4924 delete_stmts=4 delete_values=4924
+Apply timing load=0.018s preprocess=0.004s exec=0.377s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769260842165330070[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=60 delete_stmts=4 delete_values=60
+Apply timing load=0.001s preprocess=0.000s exec=0.058s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769260842165330070[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=2672 delete_stmts=1 delete_values=0
+Apply timing load=0.002s preprocess=0.001s exec=0.074s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769260842165330070[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769260842165330070[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=2623 delete_stmts=4 delete_values=2590
+Apply timing load=0.001s preprocess=0.000s exec=0.123s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769260842165330070[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=5213 delete_stmts=4 delete_values=2590
+Apply timing load=0.002s preprocess=0.000s exec=0.115s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769260842165330070[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=4 insert_values=52086 delete_stmts=5 delete_values=25892
+Apply timing load=0.018s preprocess=0.003s exec=0.945s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=15 mo_ts=1769260842165330070[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=20501 delete_stmts=4 delete_values=20501
+Apply timing load=0.024s preprocess=0.005s exec=0.785s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=12 mo_ts=1769260842165330070[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=6 delete_stmts=4 delete_values=6
+Apply timing load=0.001s preprocess=0.000s exec=0.057s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769260842165330070[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769260842165330070[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769260842165330070[/yellow]
+[green]Sync SUCCESS | 1769260842165330070[/green]
+Sync duration=4.656/3.773/8.929s status=SUCCESS
+Sync timing top3=diff:4.656s, apply:3.773s, watermark:0.295s
+------------------------------------------------------------------------
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769260971132222198[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=23596 delete_stmts=4 delete_values=23596
+Apply timing load=0.078s preprocess=0.015s exec=1.071s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769260971132222198[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=60 delete_stmts=4 delete_values=60
+Apply timing load=0.001s preprocess=0.000s exec=0.059s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769260971132222198[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=16545 delete_stmts=1 delete_values=0
+Apply timing load=0.012s preprocess=0.001s exec=0.198s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769260971132222198[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769260971132222198[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=17200 delete_stmts=4 delete_values=15110
+Apply timing load=0.002s preprocess=0.001s exec=0.207s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769260971132222198[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=32310 delete_stmts=4 delete_values=15110
+Apply timing load=0.009s preprocess=0.001s exec=0.336s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769260971132222198[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=16 insert_values=322947 delete_stmts=23 delete_values=151292
+Apply timing load=0.112s preprocess=0.018s exec=5.244s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=45 mo_ts=1769260971132222198[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=6 insert_values=83327 delete_stmts=15 delete_values=83327
+Apply timing load=0.134s preprocess=0.017s exec=3.320s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=27 mo_ts=1769260971132222198[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=6 delete_stmts=4 delete_values=6
+Apply timing load=0.001s preprocess=0.000s exec=0.068s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769260971132222198[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769260971132222198[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769260971132222198[/yellow]
+[green]Sync SUCCESS | 1769260971132222198[/green]
+Sync duration=7.594/16.546/25.589s status=SUCCESS
+Sync timing top3=apply:16.546s, diff:7.594s, watermark:1.254s
+------------------------------------------------------------------------
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769261116766832640[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=27475 delete_stmts=4 delete_values=27475
+Apply timing load=0.060s preprocess=0.020s exec=1.480s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769261116766832640[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=60 delete_stmts=4 delete_values=60
+Apply timing load=0.002s preprocess=0.000s exec=0.060s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769261116766832640[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=19622 delete_stmts=1 delete_values=0
+Apply timing load=0.006s preprocess=0.001s exec=0.225s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769261116766832640[/green]
+Apply timing load=0.002s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769261116766832640[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=20313 delete_stmts=4 delete_values=19080
+Apply timing load=0.002s preprocess=0.001s exec=0.341s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769261116766832640[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=39393 delete_stmts=4 delete_values=19080
+Apply timing load=0.007s preprocess=0.002s exec=0.477s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769261116766832640[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=20 insert_values=394057 delete_stmts=34 delete_values=190688
+Apply timing load=0.130s preprocess=0.020s exec=7.091s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=60 mo_ts=1769261116766832640[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=6 insert_values=91980 delete_stmts=15 delete_values=91980
+Apply timing load=0.223s preprocess=0.020s exec=3.535s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=27 mo_ts=1769261116766832640[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=6 delete_stmts=4 delete_values=6
+Apply timing load=0.003s preprocess=0.000s exec=0.075s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769261116766832640[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769261116766832640[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769261116766832640[/yellow]
+[green]Sync SUCCESS | 1769261116766832640[/green]
+Sync duration=22.281/20.148/43.972s status=SUCCESS
+Sync timing top3=diff:22.281s, apply:20.148s, watermark:1.345s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=3312590693 table=tpcc.bmsql_stock mo_ts=1769261116766832640
+Verify duration=0.802/0.821/1.634s mode=FULL table=tpcc.bmsql_stock mo_ts=1769261116766832640
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769261282498925242[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=22940 delete_stmts=4 delete_values=22940
+Apply timing load=0.065s preprocess=0.019s exec=1.315s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769261282498925242[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=82 delete_stmts=4 delete_values=82
+Apply timing load=0.002s preprocess=0.000s exec=0.090s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769261282498925242[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=14673 delete_stmts=1 delete_values=0
+Apply timing load=0.007s preprocess=0.001s exec=0.198s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769261282498925242[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769261282498925242[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=15086 delete_stmts=4 delete_values=13580
+Apply timing load=0.002s preprocess=0.000s exec=0.204s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769261282498925242[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=28666 delete_stmts=4 delete_values=13580
+Apply timing load=0.005s preprocess=0.001s exec=0.441s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769261282498925242[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=14 insert_values=286448 delete_stmts=28 delete_values=135751
+Apply timing load=0.079s preprocess=0.013s exec=5.019s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=48 mo_ts=1769261282498925242[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=6 insert_values=83617 delete_stmts=18 delete_values=83617
+Apply timing load=0.110s preprocess=0.016s exec=3.481s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=30 mo_ts=1769261282498925242[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=9 delete_stmts=4 delete_values=9
+Apply timing load=0.001s preprocess=0.000s exec=0.094s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769261282498925242[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769261282498925242[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769261282498925242[/yellow]
+[green]Sync SUCCESS | 1769261282498925242[/green]
+Sync duration=10.425/16.211/28.341s status=SUCCESS
+Sync timing top3=apply:16.211s, diff:10.425s, watermark:1.393s
+------------------------------------------------------------------------
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769261430934686342[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=23498 delete_stmts=4 delete_values=23498
+Apply timing load=0.070s preprocess=0.008s exec=1.245s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769261430934686342[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=80 delete_stmts=4 delete_values=80
+Apply timing load=0.001s preprocess=0.000s exec=0.099s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769261430934686342[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=15091 delete_stmts=1 delete_values=0
+Apply timing load=0.005s preprocess=0.001s exec=0.187s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769261430934686342[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769261430934686342[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=15354 delete_stmts=4 delete_values=13710
+Apply timing load=0.002s preprocess=0.001s exec=0.310s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769261430934686342[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=29064 delete_stmts=4 delete_values=13710
+Apply timing load=0.006s preprocess=0.001s exec=0.367s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769261430934686342[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=16 insert_values=290496 delete_stmts=29 delete_values=137335
+Apply timing load=0.166s preprocess=0.016s exec=5.132s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=51 mo_ts=1769261430934686342[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=6 insert_values=84931 delete_stmts=15 delete_values=84931
+Apply timing load=0.104s preprocess=0.017s exec=3.400s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=27 mo_ts=1769261430934686342[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=8 delete_stmts=4 delete_values=8
+Apply timing load=0.001s preprocess=0.000s exec=0.097s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769261430934686342[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769261430934686342[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769261430934686342[/yellow]
+[green]Sync SUCCESS | 1769261430934686342[/green]
+Sync duration=11.632/16.609/30.021s status=SUCCESS
+Sync timing top3=apply:16.609s, diff:11.632s, watermark:1.460s
+------------------------------------------------------------------------
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769261581015089728[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=22868 delete_stmts=4 delete_values=22868
+Apply timing load=0.176s preprocess=0.008s exec=1.171s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769261581015089728[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=80 delete_stmts=4 delete_values=80
+Apply timing load=0.001s preprocess=0.000s exec=0.072s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769261581015089728[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=14474 delete_stmts=1 delete_values=0
+Apply timing load=0.007s preprocess=0.001s exec=0.209s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769261581015089728[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769261581015089728[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=14911 delete_stmts=4 delete_values=13600
+Apply timing load=0.002s preprocess=0.001s exec=0.211s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769261581015089728[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=28511 delete_stmts=4 delete_values=13600
+Apply timing load=0.007s preprocess=0.002s exec=0.633s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769261581015089728[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=14 insert_values=285442 delete_stmts=28 delete_values=136227
+Apply timing load=0.131s preprocess=0.013s exec=5.102s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=48 mo_ts=1769261581015089728[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=6 insert_values=83722 delete_stmts=15 delete_values=83722
+Apply timing load=0.096s preprocess=0.016s exec=3.637s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=27 mo_ts=1769261581015089728[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=8 delete_stmts=4 delete_values=8
+Apply timing load=0.002s preprocess=0.000s exec=0.104s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769261581015089728[/green]
+Apply timing load=0.002s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769261581015089728[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769261581015089728[/yellow]
+[green]Sync SUCCESS | 1769261581015089728[/green]
+Sync duration=9.323/16.926/28.039s status=SUCCESS
+Sync timing top3=apply:16.926s, diff:9.323s, watermark:1.497s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=2390016022 table=tpcc.bmsql_stock mo_ts=1769261581015089728
+Verify duration=1.028/0.810/1.846s mode=FULL table=tpcc.bmsql_stock mo_ts=1769261581015089728
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769261731059016580[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=22631 delete_stmts=4 delete_values=22631
+Apply timing load=0.165s preprocess=0.008s exec=1.207s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769261731059016580[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=80 delete_stmts=4 delete_values=80
+Apply timing load=0.001s preprocess=0.000s exec=0.083s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769261731059016580[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=14410 delete_stmts=1 delete_values=0
+Apply timing load=0.006s preprocess=0.001s exec=0.195s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769261731059016580[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769261731059016580[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=15131 delete_stmts=4 delete_values=13320
+Apply timing load=0.002s preprocess=0.000s exec=0.219s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769261731059016580[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=28451 delete_stmts=4 delete_values=13320
+Apply timing load=0.010s preprocess=0.001s exec=0.363s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769261731059016580[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=14 insert_values=283946 delete_stmts=25 delete_values=132801
+Apply timing load=0.107s preprocess=0.015s exec=4.842s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=45 mo_ts=1769261731059016580[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=6 insert_values=84182 delete_stmts=18 delete_values=84182
+Apply timing load=0.115s preprocess=0.017s exec=3.409s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=30 mo_ts=1769261731059016580[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=8 delete_stmts=4 delete_values=8
+Apply timing load=0.002s preprocess=0.000s exec=0.087s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769261731059016580[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769261731059016580[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769261731059016580[/yellow]
+[green]Sync SUCCESS | 1769261731059016580[/green]
+Sync duration=17.601/16.215/35.573s status=SUCCESS
+Sync timing top3=diff:17.601s, apply:16.215s, watermark:1.438s
+------------------------------------------------------------------------
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769261886653997707[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_customer insert_stmts=2 insert_values=4939 delete_stmts=4 delete_values=4939
+Apply timing load=0.016s preprocess=0.002s exec=0.274s table=tpcc_ds.bmsql_customer
+[green]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL applied=12 mo_ts=1769261886653997707[/green]
+Apply stats pre table=tpcc_ds.bmsql_district insert_stmts=2 insert_values=80 delete_stmts=4 delete_values=80
+Apply timing load=0.001s preprocess=0.000s exec=0.046s table=tpcc_ds.bmsql_district
+[green]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL applied=12 mo_ts=1769261886653997707[/green]
+Apply stats pre table=tpcc_ds.bmsql_history insert_stmts=2 insert_values=2748 delete_stmts=1 delete_values=0
+Apply timing load=0.002s preprocess=0.000s exec=0.140s table=tpcc_ds.bmsql_history
+[green]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL applied=9 mo_ts=1769261886653997707[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769261886653997707[/yellow]
+Apply stats pre table=tpcc_ds.bmsql_new_order insert_stmts=2 insert_values=2808 delete_stmts=4 delete_values=2450
+Apply timing load=0.001s preprocess=0.000s exec=0.078s table=tpcc_ds.bmsql_new_order
+[green]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL applied=12 mo_ts=1769261886653997707[/green]
+Apply stats pre table=tpcc_ds.bmsql_oorder insert_stmts=2 insert_values=5258 delete_stmts=4 delete_values=2450
+Apply timing load=0.002s preprocess=0.000s exec=0.086s table=tpcc_ds.bmsql_oorder
+[green]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL applied=12 mo_ts=1769261886653997707[/green]
+Apply stats pre table=tpcc_ds.bmsql_order_line insert_stmts=4 insert_values=53343 delete_stmts=5 delete_values=24767
+Apply timing load=0.016s preprocess=0.002s exec=0.795s table=tpcc_ds.bmsql_order_line
+[green]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL applied=15 mo_ts=1769261886653997707[/green]
+Apply stats pre table=tpcc_ds.bmsql_stock insert_stmts=2 insert_values=23055 delete_stmts=4 delete_values=23055
+Apply timing load=0.023s preprocess=0.004s exec=0.708s table=tpcc_ds.bmsql_stock
+[green]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL applied=12 mo_ts=1769261886653997707[/green]
+Apply stats pre table=tpcc_ds.bmsql_warehouse insert_stmts=2 insert_values=8 delete_stmts=4 delete_values=8
+Apply timing load=0.001s preprocess=0.000s exec=0.038s table=tpcc_ds.bmsql_warehouse
+[green]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL applied=12 mo_ts=1769261886653997707[/green]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769261886653997707[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769261886653997707[/yellow]
+[green]Sync SUCCESS | 1769261886653997707[/green]
+Sync duration=4.588/3.371/8.544s status=SUCCESS
+Sync timing top3=diff:4.588s, apply:3.371s, watermark:0.382s
+------------------------------------------------------------------------
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769262015267866316[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_customer
+[yellow]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL noop mo_ts=1769262015267866316[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_district
+[yellow]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL noop mo_ts=1769262015267866316[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_history
+[yellow]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL noop mo_ts=1769262015267866316[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769262015267866316[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_new_order
+[yellow]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL noop mo_ts=1769262015267866316[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_oorder
+[yellow]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL noop mo_ts=1769262015267866316[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_order_line
+[yellow]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL noop mo_ts=1769262015267866316[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_stock
+[yellow]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL noop mo_ts=1769262015267866316[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_warehouse
+[yellow]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL noop mo_ts=1769262015267866316[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769262015267866316[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769262015267866316[/yellow]
+[green]Sync SUCCESS | 1769262015267866316[/green]
+Sync duration=1.338/0.021/1.552s status=SUCCESS
+Sync timing top3=diff:1.338s, precheck:0.095s, cleanup:0.069s
+------------------------------------------------------------------------
+[green]FULL VERIFY PASSED[/green] upstream rows=1000000 hash=3022513511 table=tpcc.bmsql_stock mo_ts=1769262015267866316
+Verify duration=0.746/0.676/1.429s mode=FULL table=tpcc.bmsql_stock mo_ts=1769262015267866316
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_config
+[yellow]Apply diff done table=tpcc.bmsql_config mode=INCREMENTAL noop mo_ts=1769262138334135667[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_customer
+[yellow]Apply diff done table=tpcc.bmsql_customer mode=INCREMENTAL noop mo_ts=1769262138334135667[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_district
+[yellow]Apply diff done table=tpcc.bmsql_district mode=INCREMENTAL noop mo_ts=1769262138334135667[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_history
+[yellow]Apply diff done table=tpcc.bmsql_history mode=INCREMENTAL noop mo_ts=1769262138334135667[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_item
+[yellow]Apply diff done table=tpcc.bmsql_item mode=INCREMENTAL noop mo_ts=1769262138334135667[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_new_order
+[yellow]Apply diff done table=tpcc.bmsql_new_order mode=INCREMENTAL noop mo_ts=1769262138334135667[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_oorder
+[yellow]Apply diff done table=tpcc.bmsql_oorder mode=INCREMENTAL noop mo_ts=1769262138334135667[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_order_line
+[yellow]Apply diff done table=tpcc.bmsql_order_line mode=INCREMENTAL noop mo_ts=1769262138334135667[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_stock
+[yellow]Apply diff done table=tpcc.bmsql_stock mode=INCREMENTAL noop mo_ts=1769262138334135667[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.bmsql_warehouse
+[yellow]Apply diff done table=tpcc.bmsql_warehouse mode=INCREMENTAL noop mo_ts=1769262138334135667[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.x
+[yellow]Apply diff done table=tpcc.x mode=INCREMENTAL noop mo_ts=1769262138334135667[/yellow]
+Apply timing load=0.001s preprocess=0.000s exec=0.000s table=tpcc_ds.y
+[yellow]Apply diff done table=tpcc.y mode=INCREMENTAL noop mo_ts=1769262138334135667[/yellow]
+[green]Sync SUCCESS | 1769262138334135667[/green]
+Sync duration=1.003/0.020/1.221s status=SUCCESS
+Sync timing top3=diff:1.003s, precheck:0.093s, cleanup:0.074s
+------------------------------------------------------------------------
+Auto mode interrupted by user.

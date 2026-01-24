@@ -300,6 +300,10 @@ def remove_stage_files(up_conn, dfiles):
             log.warning(f"Remove stage file failed: {f}: {e}")
 
 def split_sql_statements(sql_text):
+    # Fast path: diff files use ";\n" as delimiter
+    if ";\n" in sql_text:
+        return [s.strip() for s in sql_text.split(";\n") if s.strip()]
+    # Fallback: full parser for complex cases
     stmts, buf = [], []
     in_single = in_double = in_backtick = False
     in_line_comment = in_block_comment = False
@@ -376,27 +380,33 @@ def split_sql_statements(sql_text):
         stmts.append(tail)
     return stmts
 
+_REWRITE_PATTERN = re.compile(
+    r"(?P<dbq>`?)(?P<db>[^`.\s(),;]+)(?P=dbq)\s*\.\s*(?P<tableq>`?)(?P<table>[^`.\s(),;]+)(?P=tableq)",
+    re.I,
+)
+
 def rewrite_diff_statement(stmt, u_db, u_table, d_db, d_table):
+    u_db_l = u_db.lower()
+    u_tbl_l = u_table.lower()
     def repl(m):
         dbq = m.group("dbq")
         tq = m.group("tableq")
         db = m.group("db")
         tbl = m.group("table")
-        tbl_l = tbl.lower()
-        u_tbl = u_table.lower()
-        if db.lower() != u_db.lower():
+        if db.lower() != u_db_l:
             return m.group(0)
-        if tbl_l == u_tbl or tbl_l in (f"{u_tbl}_copy_prev", f"{u_tbl}_copy_now", f"{u_tbl}_zero"):
+        tbl_l = tbl.lower()
+        if tbl_l == u_tbl_l or tbl_l in (f"{u_tbl_l}_copy_prev", f"{u_tbl_l}_copy_now", f"{u_tbl_l}_zero"):
             return f"{dbq}{d_db}{dbq}.{tq}{d_table}{tq}"
         if tbl_l.startswith("__mo_diff_"):
             return f"{dbq}{d_db}{dbq}.{tq}{tbl}{tq}"
         return m.group(0)
-    # Avoid capturing trailing punctuation like ")" into identifiers.
-    pattern = re.compile(
-        r"(?P<dbq>`?)(?P<db>[^`.\s(),;]+)(?P=dbq)\s*\.\s*(?P<tableq>`?)(?P<table>[^`.\s(),;]+)(?P=tableq)",
-        re.I,
-    )
-    return pattern.sub(repl, stmt)
+    # Table names only appear in first ~500 chars, skip scanning huge values
+    if len(stmt) > 500:
+        head = stmt[:500]
+        tail = stmt[500:]
+        return _REWRITE_PATTERN.sub(repl, head) + tail
+    return _REWRITE_PATTERN.sub(repl, stmt)
 
 
 def find_matching_paren(text, start_idx):
@@ -1173,16 +1183,24 @@ def apply_incremental_diff(up_conn, ds_conn, u_db, u_table, d_db, d_table, dfile
     total_delete_stmts = 0
     total_delete_values = 0
     total_unknown_values = 0
+    load_elapsed = 0.0
+    preprocess_elapsed = 0.0
+    exec_elapsed = 0.0
 
+    # First pass: load files and count stats
+    file_contents = []
     for r in dfiles:
         f = get_diff_file_path(r)
         if not f:
             continue
+        load_start = time.time()
         raw = up_conn.fetch_one("select load_file(cast(%s as datalink)) as c", (f,))['c']
+        load_elapsed += time.time() - load_start
         if raw is None:
             log.error(f"Load diff file failed: {f}")
             raise RuntimeError(f"load_file returned NULL: {f}")
         stmt_str = raw.decode('utf-8') if isinstance(raw, bytes) else raw
+        file_contents.append(stmt_str)
         c_ins, c_ins_v, c_del, c_del_v, c_unk = count_apply_stats(stmt_str)
         total_insert_stmts += c_ins
         total_insert_values += c_ins_v
@@ -1200,40 +1218,40 @@ def apply_incremental_diff(up_conn, ds_conn, u_db, u_table, d_db, d_table, dfile
             stats += f" unknown_values={total_unknown_values}"
         log.info(stats)
     if total_insert_values == 0 and total_delete_values == 0 and total_unknown_values == 0:
+        log.info(f"Apply timing load={load_elapsed:.3f}s preprocess=0.000s exec=0.000s table={d_db}.{d_table}")
         return 0
 
-    for r in dfiles:
-        f = get_diff_file_path(r)
-        if not f:
-            continue
-        raw = up_conn.fetch_one("select load_file(cast(%s as datalink)) as c", (f,))['c']
-        if raw is None:
-            log.error(f"Load diff file failed: {f}")
-            raise RuntimeError(f"load_file returned NULL: {f}")
-        stmt_str = raw.decode('utf-8') if isinstance(raw, bytes) else raw
-        stmt_count = 0
-        for s in split_sql_statements(stmt_str):
+    # Second pass: execute statements (reuse loaded content)
+    for stmt_str in file_contents:
+        prep_start = time.time()
+        stmts = split_sql_statements(stmt_str)
+        preprocess_elapsed += time.time() - prep_start
+        for s in stmts:
             s_strip = s.strip()
             if not s_strip:
                 continue
             if re.match(r"^(BEGIN|COMMIT|ROLLBACK|START\s+TRANSACTION)\b", s_strip, re.I):
                 continue
+            prep_start = time.time()
             exec_sql = rewrite_diff_statement(s_strip, u_db, u_table, d_db, d_table)
+            preprocess_elapsed += time.time() - prep_start
             try:
+                exec_start = time.time()
                 ds_conn.execute(exec_sql)
+                exec_elapsed += time.time() - exec_start
             except Exception as e:
                 try:
                     os.makedirs("/tmp/branch_cdc", exist_ok=True)
                     ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S_%f")
                     sql_path = f"/tmp/branch_cdc/apply_failed_{ts}.sql"
-                    with open(sql_path, "w") as f:
-                        f.write(exec_sql)
+                    with open(sql_path, "w") as wf:
+                        wf.write(exec_sql)
                     log.error(f"Apply failed sql saved path={sql_path} err={e}")
                 except Exception as dump_err:
                     log.error(f"Apply failed sql dump failed: {dump_err} err={e}")
                 raise
             applied_stmt_count += 1
-            stmt_count += 1
+    log.info(f"Apply timing load={load_elapsed:.3f}s preprocess={preprocess_elapsed:.3f}s exec={exec_elapsed:.3f}s table={d_db}.{d_table}")
     return applied_stmt_count
 
 def sync_database_table(up_conn, ds_conn, u_db, u_table, d_db, stage_name, lastgood, new_mo_ts):
@@ -1258,8 +1276,8 @@ def sync_database_table(up_conn, ds_conn, u_db, u_table, d_db, stage_name, lastg
         applied_stmt_count = None
     else:
         applied_stmt_count = apply_incremental_diff(up_conn, ds_conn, u_db, u_table, d_db, d_table, dfiles)
-    apply_elapsed = time.time() - apply_start
-    return mode, dfiles, applied_stmt_count, diff_elapsed, apply_elapsed
+    table_apply_elapsed = time.time() - apply_start
+    return mode, dfiles, applied_stmt_count, diff_elapsed, table_apply_elapsed
 
 def perform_db_sync(config, is_auto=False, lock_held=False, force_full=False, return_detail=False):
     start_ts = time.time()
@@ -1361,7 +1379,7 @@ def perform_db_sync(config, is_auto=False, lock_held=False, force_full=False, re
             apply_start = time.time()
             ds_conn.execute(f"INSERT INTO `{META_DB}`.`{META_TABLE}` (task_id, watermark) VALUES (%s, %s)", (tid, new_mo_ts))
             ds_conn.commit()
-            apply_elapsed += time.time() - apply_start
+            record_timing(timings, "watermark", apply_start)
             sync_success = True
         except Exception as e:
             ds_conn.rollback()
