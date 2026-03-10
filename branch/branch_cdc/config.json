@@ -18,12 +18,12 @@
     "stage": {
         "name": "stage02"
     },
-    "sync_interval": 120,
+    "sync_interval": 1,
     "verify_columns": [],
     "pitr": {
-        "name": "pitr_tpcc_db_260124211401",
+        "name": "pitr_tpcc_db_260309160752",
         "level": "database",
-        "obj_id": 541546,
+        "obj_id": 382286,
         "length": 7,
         "unit": "d"
     },
